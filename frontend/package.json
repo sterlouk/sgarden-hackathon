@@ -1,0 +1,123 @@
+{
+	"name": "sgarden-frontend",
+	"version": "1.0.0",
+	"private": true,
+	"description": "The frontend of sgarden platform.",
+	"homepage": "",
+	"bugs": {
+		"url": "https://github.com/robotics-4-all/sgarden-frontend/issues"
+	},
+	"repository": "github:robotics-4-all/sgarden-frontend",
+	"contributors": [
+		{
+			"name": "Thomas Karanikiotis",
+			"email": "tkaranikio@gmail.com"
+		}
+	],
+	"scripts": {
+		"build": "craco build",
+		"lint": "eslint . --cache",
+		"serve": "serve -s -l 3050 build",
+		"start": "craco start",
+		"test": "npm run lint",
+		"cypress:open": "cypress open",
+		"cypress:run": "cypress run"
+	},
+	"browserslist": {
+		"production": [
+			">1%",
+			"not dead",
+			"not op_mini all",
+			"not ie > 0",
+			"not ie_mob > 0"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
+	"prettier": "@iamnapo/prettier-config",
+	"eslintConfig": {
+		"extends": [
+			"iamnapo/react"
+		],
+		"rules": {
+			"unicorn/prefer-module": "off",
+			"unicorn/prefer-string-replace-all": "error",
+			"unicorn/prefer-at": "error",
+			"import/no-unresolved": "off"
+		},
+		"overrides": [
+			{
+				"files": "",
+				"rules": {
+					"no-restricted-globals": "off"
+				}
+			},
+			{
+				"files": "",
+				"rules": {
+					"react/prop-types": "off",
+					"react/jsx-filename-extension": "off"
+				}
+			}
+		],
+		"ignorePatterns": "build"
+	},
+	"dependencies": {
+		"@craco/craco": "^7.0.0",
+		"@emotion/react": "^11.10.6",
+		"@emotion/styled": "^11.10.6",
+		"@iamnapo/sort": "^2.2.0",
+		"@mui/icons-material": "^5.11.9",
+		"@mui/lab": "^5.0.0-alpha.120",
+		"@mui/material": "^5.11.9",
+		"@mui/styles": "^5.11.9",
+		"@mui/x-date-pickers": "^5.0.19",
+		"@sentry/browser": "^7.38.0",
+		"bulma": "^0.9.4",
+		"clsx": "^1.2.1",
+		"color-harmony": "^0.3.0",
+		"dayjs": "^1.11.7",
+		"formik": "^2.2.9",
+		"js-cookie": "^3.0.1",
+		"jwt-decode": "^3.1.2",
+		"ky": "^0.33.2",
+		"match-sorter": "^6.3.1",
+		"mui-image": "^1.0.7",
+		"plotly.js": "^2.18.2",
+		"prop-types": "^15.8.1",
+		"query-string": "^8.1.0",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-error-boundary": "^3.1.4",
+		"react-plotly.js": "^2.6.0",
+		"react-router-dom": "^6.8.1",
+		"react-simple-maps": "^3.0.0",
+		"react-table-6": "^6.11.0",
+		"styled-components": "^5.3.6",
+		"swr": "^2.0.3",
+		"yup": "^1.0.0",
+		"zustand": "^4.3.3"
+	},
+	"devDependencies": {
+		"@iamnapo/prettier-config": "^1.0.3",
+		"ajv": "^8.17.1",
+		"babel-plugin-import": "^1.13.6",
+		"cypress": "^13.15.2",
+		"dotenv": "^16.0.3",
+		"eslint": "^8.34.0",
+		"eslint-config-iamnapo": "^28.2.0",
+		"events": "^3.3.0",
+		"react-scripts": "^5.0.1",
+		"sass": "^1.58.3",
+		"serve": "^14.2.4",
+		"source-map-explorer": "^2.5.3",
+		"start-server-and-test": "^2.0.8",
+		"url": "^0.11.0"
+	},
+	"engines": {
+		"node": ">=16"
+	}
+}
