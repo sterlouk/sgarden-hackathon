@@ -40,14 +40,7 @@ const Card = ({
 				justifyContent="center"
 				alignItems="center"
 			>
-				{htmlTitle ? (
-					<Typography 
-						variant="body" 
-						component="h2" 
-						fontSize={titleFontSize} 
-						dangerouslySetInnerHTML={{ __html: htmlTitle }} 
-					/>
-				) : typeof title === "string" ? (
+				{typeof title === "string" ? (
 					<Typography variant="body" component="h2" fontSize={titleFontSize}>{title}</Typography>
 				) : (
 					title

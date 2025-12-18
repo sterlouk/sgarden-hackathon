@@ -31,11 +31,13 @@ const maybeSetToken = (Component) => (props) => {
 	return <Component {...props} />;
 };
 
+const SIDEBAR_BREAKPOINT = 900;
+
 const useResponsiveSidebar = () => {
-	const [isSmall, setIsSmall] = useState(window.innerWidth < 900);
+	const [isSmall, setIsSmall] = useState(window.innerWidth < SIDEBAR_BREAKPOINT);
 
 	useEffect(() => {
-		const onResize = () => setIsSmall(window.innerWidth < 900);
+		const onResize = () => setIsSmall(window.innerWidth < SIDEBAR_BREAKPOINT);
 		window.addEventListener("resize", onResize);
 
 		return () => window.removeEventListener("resize", onResize);
