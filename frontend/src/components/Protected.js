@@ -31,10 +31,8 @@ const maybeSetToken = (Component) => (props) => {
 	return <Component {...props} />;
 };
 
-const Protected = ({ c }) => {
+const useResponsiveSidebar = () => {
 	const [isSmall, setIsSmall] = useState(window.innerWidth < 900);
-	const location = useLocation();
-	const classes = useStyles();
 
 	useEffect(() => {
 		const onResize = () => setIsSmall(window.innerWidth < 900);
@@ -43,22 +41,37 @@ const Protected = ({ c }) => {
 		return () => window.removeEventListener("resize", onResize);
 	}, []);
 
-	return jwt.isAuthenticated()
-		? (
-			<div className={classes.main}>
-				<Sidebar isSmall={isSmall} />
-				<div className={classes.mainBox} style={{ width: (isSmall) ? "calc(100% - 50px)" : "calc(100% - 200px)", marginLeft: (isSmall) ? "50px" : "200px" }}>
-					<div className="header-container">
-						{c}
-					</div>
-				</div>
-			</div>
-		)
-		: <Navigate replace to="/" state={{ from: location }} />;
+	return isSmall;
 };
 
-Protected.propTypes = { c: PropTypes.node.isRequired };
-Protected.whyDidYouRender = true;
+const createGuardComponent = (predicate) => {
+	const Guard = ({ c }) => {
+		const isSmall = useResponsiveSidebar();
+		const location = useLocation();
+		const classes = useStyles();
 
-export default maybeSetToken(Protected);
+		return predicate()
+			? (
+				<div className={classes.main}>
+					<Sidebar isSmall={isSmall} />
+					<div className={classes.mainBox} style={{ width: (isSmall) ? "calc(100% - 50px)" : "calc(100% - 200px)", marginLeft: (isSmall) ? "50px" : "200px" }}>
+						<div className="header-container">
+							{c}
+						</div>
+					</div>
+				</div>
+			)
+			: <Navigate replace to="/" state={{ from: location }} />;
+	};
+
+	Guard.propTypes = { c: PropTypes.node.isRequired };
+	Guard.whyDidYouRender = true;
+
+	return maybeSetToken(Guard);
+};
+
+const Protected = createGuardComponent(() => jwt.isAuthenticated());
+
+export { createGuardComponent };
+export default Protected;
 

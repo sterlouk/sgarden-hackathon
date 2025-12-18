@@ -1,15 +1,24 @@
 import { Typography, Button } from "@mui/material";
 
-export const PrimaryBackgroundButton = ({
-	id = "primary-background-button",
+const createButton = ({
+	defaultId,
+	variant,
+	color,
+	defaultTitleColor = "white",
+	defaultBackgroundColor,
+	borderWidth,
+	useTitleColorAsBorder = false,
+}) => ({
+	id = defaultId,
 	type = "button",
 	disabled = false,
 	className = "",
 	titleClassName = "",
-	titleColor = "white",
+	titleColor = defaultTitleColor,
 	size = "",
 	width = "200px",
 	title = "Button",
+	backgroundColor = defaultBackgroundColor,
 	onClick,
 }) => (
 	<Button
@@ -18,275 +27,90 @@ export const PrimaryBackgroundButton = ({
 		type={type}
 		disabled={disabled}
 		className={className}
-		variant="contained"
-		color="primary"
+		variant={variant}
+		color={color}
 		size={(size || "")}
-		style={{ ...(width && { width }) }}
+		style={{
+			...(width && { width }),
+			...(variant === "outlined"
+				? {
+					backgroundColor: backgroundColor || "white",
+					...(borderWidth ? { borderWidth } : {}),
+					...(useTitleColorAsBorder ? { borderColor: titleColor } : {}),
+				}
+				: {}),
+		}}
 		onClick={onClick}
 	>
 		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
+			<b>{title}</b>
 		</Typography>
 	</Button>
 );
 
-export const PrimaryBorderButton = ({
-	id = "primary-border-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "primary",
-	size = "",
-	width = "200px",
-	title = "Button",
-	backgroundColor = "white",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="outlined"
-		color="primary"
-		size={(size || "")}
-		style={{ ...(width && { width }), backgroundColor: (backgroundColor || "white"), borderWidth: "3px", borderColor: titleColor }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const PrimaryBackgroundButton = createButton({
+	defaultId: "primary-background-button",
+	variant: "contained",
+	color: "primary",
+	defaultTitleColor: "white",
+});
 
-export const SecondaryBackgroundButton = ({
-	id = "secondary-background-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "white",
-	size = "",
-	width = "200px",
-	title = "Button",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="contained"
-		color="secondary"
-		size={(size || "")}
-		style={{ ...(width && { width }) }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const PrimaryBorderButton = createButton({
+	defaultId: "primary-border-button",
+	variant: "outlined",
+	color: "primary",
+	defaultTitleColor: "primary",
+	borderWidth: "3px",
+	useTitleColorAsBorder: true,
+});
 
-export const SecondaryBorderButton = ({
-	id = "secondary-border-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "secondary",
-	size = "",
-	width = "200px",
-	title = "Button",
-	backgroundColor = "white",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="outlined"
-		color="secondary"
-		size={(size || "")}
-		style={{ ...(width && { width }), backgroundColor: (backgroundColor || "white"), borderWidth: "3px" }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const SecondaryBackgroundButton = createButton({
+	defaultId: "secondary-background-button",
+	variant: "contained",
+	color: "secondary",
+	defaultTitleColor: "white",
+});
 
-export const HighlightBackgroundButton = ({
-	id = "highlight-background-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "white",
-	size = "",
-	width = "200px",
-	title = "Button",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="contained"
-		color="third"
-		size={(size || "")}
-		style={{ ...(width && { width }) }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const SecondaryBorderButton = createButton({
+	defaultId: "secondary-border-button",
+	variant: "outlined",
+	color: "secondary",
+	defaultTitleColor: "secondary",
+	borderWidth: "3px",
+});
 
-export const HighlightBorderButton = ({
-	id = "highlight-border-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "third",
-	size = "",
-	width = "200px",
-	title = "Button",
-	backgroundColor = "white",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="outlined"
-		color="third"
-		size={(size || "")}
-		style={{ ...(width && { width }), backgroundColor: (backgroundColor || "white"), borderWidth: "3px" }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const HighlightBackgroundButton = createButton({
+	defaultId: "highlight-background-button",
+	variant: "contained",
+	color: "third",
+	defaultTitleColor: "white",
+});
 
-export const SuccessBackgroundButton = ({
-	id = "success-background-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "white",
-	size = "",
-	width = "200px",
-	title = "Button",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="contained"
-		color="success"
-		size={(size || "")}
-		style={{ ...(width && { width }) }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const HighlightBorderButton = createButton({
+	defaultId: "highlight-border-button",
+	variant: "outlined",
+	color: "third",
+	defaultTitleColor: "third",
+	borderWidth: "3px",
+});
 
-export const ErrorBackgroundButton = ({
-	id = "error-background-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "white",
-	size = "",
-	width = "200px",
-	title = "Button",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="contained"
-		color="error"
-		size={(size || "")}
-		style={{ ...(width && { width }) }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const SuccessBackgroundButton = createButton({
+	defaultId: "success-background-button",
+	variant: "contained",
+	color: "success",
+	defaultTitleColor: "white",
+});
 
-export const InfoBackgroundButton = ({
-	id = "info-background-button",
-	type = "button",
-	disabled = false,
-	className = "",
-	titleClassName = "",
-	titleColor = "white",
-	size = "",
-	width = "200px",
-	title = "Button",
-	onClick,
-}) => (
-	<Button
-		key={id}
-		id={id}
-		type={type}
-		disabled={disabled}
-		className={className}
-		variant="contained"
-		color="info"
-		size={(size || "")}
-		style={{ ...(width && { width }) }}
-		onClick={onClick}
-	>
-		<Typography className={titleClassName} sx={{ color: `${titleColor}!important` }} style={{ textTransform: "none" }}>
-			<b>
-				{title}
-			</b>
-		</Typography>
-	</Button>
-);
+export const ErrorBackgroundButton = createButton({
+	defaultId: "error-background-button",
+	variant: "contained",
+	color: "error",
+	defaultTitleColor: "white",
+});
+
+export const InfoBackgroundButton = createButton({
+	defaultId: "info-background-button",
+	variant: "contained",
+	color: "info",
+	defaultTitleColor: "white",
+});
