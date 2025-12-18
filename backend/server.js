@@ -44,6 +44,7 @@ app.use(helmet({
 			connectSrc: ["'self'", "localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"],
 		},
 	},
+	permittedCrossDomainPolicies: { permittedPolicies: "none" },
 }));
 app.use(setServerTimeout(2 * 60 * 1000));
 if (NODE_ENV === "development") app.use(morgan("dev", { skip: (req) => req.method === "OPTIONS" }));
