@@ -201,26 +201,44 @@ router.get("/config/load", (req, res) => {
 	}
 });
 
+const escapeHtml = (value) => String(value)
+	.replace(/&/g, "&amp;")
+	.replace(/</g, "&lt;")
+	.replace(/>/g, "&gt;")
+	.replace(/"/g, "&quot;")
+	.replace(/'/g, "&#39;");
+
+const renderTemplateSafely = (templateString, data) => {
+	// Convert `${foo}` tokens to `{{foo}}` to prevent direct template literal execution
+	const mustacheLike = templateString.replace(/\$\{\s*([a-zA-Z0-9_.]+)\s*\}/g, "{{$1}}");
+
+	return mustacheLike.replace(/{{\s*([a-zA-Z0-9_.]+)\s*}}/g, (_, key) => {
+		const value = key.split(".").reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), data);
+		if (value === undefined || value === null) return "";
+		return escapeHtml(value);
+	});
+};
+
 router.post("/generate-custom-report", (req, res) => {
 	try {
 		const { templateString, data } = req.body;
-		
+
 		if (!templateString) {
 			return res.status(400).json({ message: "Template string required" });
 		}
-		
+
 		const reportData = data || {
 			username: "Unknown",
 			date: new Date().toLocaleDateString(),
-			totalUsers: 100
+			totalUsers: 100,
 		};
-		
-		const report = eval(`\`${templateString}\``);
-		
-		return res.json({ 
-			success: true, 
+
+		const report = renderTemplateSafely(templateString, reportData);
+
+		return res.json({
+			success: true,
 			report,
-			generatedAt: new Date()
+			generatedAt: new Date(),
 		});
 	} catch (error) {
 		Sentry.captureException(error);
