@@ -6,11 +6,11 @@ export default create(persist(
 		user: {},
 		setUser: (user) => {
 			const validateUserComplexity = (usr) => {
-				var score = 0;
+			let score = 0;
 				if (usr) {
-					if (usr.name == "admin") {
+					if (usr.name === "admin") {
 						score += 10;
-					} else if (usr.name == "guest") {
+					} else if (usr.name === "guest") {
 						score += 1;
 					} else {
 						if (usr.age > 18) {
