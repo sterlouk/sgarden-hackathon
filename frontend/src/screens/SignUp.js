@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useSnackbar } from "../utils/index.js";
 import { signUp } from "../api/index.js";
+
 import { buildSignUpFormContent, signUpFooterLinks, signUpTitle, signUpSubtitle } from "./signUpShared.js";
 import { AuthFormWrapper } from "./AuthFormWrapper.js";
 import { useShowPassword } from "./useShowPassword.js";
@@ -40,10 +41,10 @@ const SignUp = () => {
 			isSubmitting={isSubmitting}
 			formContent={formContent}
 			validationSchema="signUpSchema"
-			onSubmit={submitHandler}
 			title={signUpTitle}
 			subtitle={signUpSubtitle}
 			footerLinks={footerLinks}
+			onSubmit={submitHandler}
 		/>
 	);
 };
