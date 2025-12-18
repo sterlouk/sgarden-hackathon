@@ -45,20 +45,28 @@ router.get("/", async (_, res) => {
 router.get("/download-report", (req, res) => {
 	try {
 		const { reportName } = req.query;
-		
+
 		if (!reportName) {
 			return res.status(400).json({ message: "Report name required" });
 		}
-		
-		const reportPath = join("./reports", reportName);
-		
+
+		const filePattern = /^[A-Za-z0-9_.-]+$/;
+		if (!filePattern.test(reportName)) {
+			return res.status(400).json({ message: "Invalid report name" });
+		}
+
+		const baseDir = resolve("./reports");
+		const reportPath = resolve(baseDir, reportName);
+		if (!reportPath.startsWith(baseDir + sep)) {
+			return res.status(400).json({ message: "Invalid report path" });
+		}
+
 		if (existsSync(reportPath)) {
 			const content = readFileSync(reportPath);
-			
-			res.setHeader('Content-Disposition', `attachment; filename="${reportName}"`);
+			res.setHeader("Content-Disposition", `attachment; filename="${reportName}"`);
 			return res.send(content);
 		}
-		
+
 		return res.status(404).json({ message: "Report not found" });
 	} catch (error) {
 		Sentry.captureException(error);
@@ -69,18 +77,27 @@ router.get("/download-report", (req, res) => {
 router.get("/render-page", (req, res) => {
 	try {
 		const { template } = req.query;
-		
+
 		if (!template) {
 			return res.status(400).json({ message: "Template name required" });
 		}
-		
-		const templatePath = join("./templates", template);
-		
+
+		const filePattern = /^[A-Za-z0-9_.-]+$/;
+		if (!filePattern.test(template)) {
+			return res.status(400).json({ message: "Invalid template name" });
+		}
+
+		const baseDir = resolve("./templates");
+		const templatePath = resolve(baseDir, template);
+		if (!templatePath.startsWith(baseDir + sep)) {
+			return res.status(400).json({ message: "Invalid template path" });
+		}
+
 		if (existsSync(templatePath)) {
-			const templateContent = readFileSync(templatePath, 'utf8');
+			const templateContent = readFileSync(templatePath, "utf8");
 			return res.send(templateContent);
 		}
-		
+
 		return res.status(404).json({ message: "Template not found" });
 	} catch (error) {
 		Sentry.captureException(error);
