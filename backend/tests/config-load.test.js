@@ -9,6 +9,10 @@ import dataRouter from "../src/routes/data.js";
 test.before((t) => {
 	const app = express();
 	app.use(express.json({ limit: "1mb" }));
+	app.use((req, res, next) => {
+		res.locals = { user: { id: "test-user" } };
+		next();
+	});
 	app.use("/api/data", dataRouter);
 
 	const server = http.createServer(app).listen();
