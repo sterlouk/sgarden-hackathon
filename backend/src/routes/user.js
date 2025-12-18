@@ -112,7 +112,6 @@ router.get("/profile/:userId", async (req, res) => {
 });
 
 router.get("/user-details/:id", async (req, res) => {
-    var unused = "test";
     console.log("Fetching user details");
 	try {
 		const { id } = req.params;
