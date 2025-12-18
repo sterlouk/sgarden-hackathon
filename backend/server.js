@@ -42,6 +42,7 @@ app.use(helmet({
 			scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
 			styleSrc: ["'self'", "'unsafe-inline'"],
 			connectSrc: ["'self'", "localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"],
+			frameAncestors: ["'self'"],
 		},
 	},
 	permittedCrossDomainPolicies: { permittedPolicies: "none" },
