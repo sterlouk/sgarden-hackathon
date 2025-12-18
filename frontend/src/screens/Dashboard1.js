@@ -12,6 +12,28 @@ const availableCities = ["Thessaloniki", "Athens", "Patras"];
 const availableCropTypes = ["Soil Moisture", "ETc", "Irrigation Water", "Rainfall"];
 const generateRandomData = (min = 0, max = 10) => Math.random() * (max - min) + min;
 const randomDate = () => new Date(new Date(2020, 0, 1).getTime() + Math.random() * (new Date().getTime() - new Date(2020, 0, 1).getTime()));
+const buildMonthlySeries = (fromDate, toDate) => {
+    if (!fromDate || !toDate) {
+        return { months: [], soilMoisture: [], etc: [], irrigationWater: [], rainfall: [] };
+    }
+
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    const monthLabels = [];
+    while (from <= to) {
+        monthLabels.push(from.toLocaleString("en-GB", { month: "short", year: "numeric" }));
+        from.setMonth(from.getMonth() + 1);
+    }
+
+    return {
+        months: monthLabels,
+        soilMoisture: monthLabels.map(() => generateRandomData(0, 20)),
+        etc: monthLabels.map(() => generateRandomData(0, 30)),
+        irrigationWater: monthLabels.map(() => generateRandomData(0, 40)),
+        rainfall: monthLabels.map(() => generateRandomData(0, 50)),
+    };
+};
+const randomFieldInformation = () => ({ date: randomDate(), value: generateRandomData(0, 100) });
 
 const Dashboard = () => {
     const [selectedCity, setSelectedCity] = useState("Thessaloniki");
@@ -19,55 +41,17 @@ const Dashboard = () => {
     const [fromDate, setFromDate] = useState(new Date(new Date().setFullYear(new Date().getFullYear() - 1)));
     const [toDate, setToDate] = useState(new Date());
     const [months, setMonths] = useState([]);
-    const [data, setData] = useState({ fieldInformation: { date: randomDate(), value: generateRandomData(0, 100) }, soilMoisture: [], etc: [], irrigationWater: [], rainfall: [] });
-
-    const changeFieldData = () => {
-        const fieldInformation = { date: randomDate(), value: generateRandomData(0, 100) };
-        setData({ ...data, fieldInformation });
-    };
+    const [data, setData] = useState({ fieldInformation: randomFieldInformation(), soilMoisture: [], etc: [], irrigationWater: [], rainfall: [] });
 
     useEffect(() => {
-        if (fromDate && toDate) {
-            const from = new Date(fromDate);
-            const to = new Date(toDate);
-            const months = [];
-            while (from <= to) {
-                months.push(from.toLocaleString("en-GB", { month: "short", year: "numeric" }));
-                from.setMonth(from.getMonth() + 1);
-            }
-            setMonths(months);
-            
-            const soilMoisture = months.map((month) => generateRandomData(0, 20));
-            const etc = months.map((month) => generateRandomData(0, 30));
-            const irrigationWater = months.map((month) => generateRandomData(0, 40));
-            const rainfall = months.map((month) => generateRandomData(0, 50));
-            setData({ soilMoisture, etc, irrigationWater, rainfall, fieldInformation: data.fieldInformation });
-        }
-    }, [fromDate, toDate]);
+        const series = buildMonthlySeries(fromDate, toDate);
+        setMonths(series.months);
+        setData((prev) => ({ ...prev, ...series }));
+    }, [fromDate, toDate, selectedCity]);
 
     useEffect(() => {
-        changeFieldData();
-    }, [selectedCropType]);
-
-    useEffect(() => {
-        changeFieldData();
-        if (fromDate && toDate) {
-            const from = new Date(fromDate);
-            const to = new Date(toDate);
-            const months = [];
-            while (from <= to) {
-                months.push(from.toLocaleString("en-GB", { month: "short", year: "numeric" }));
-                from.setMonth(from.getMonth() + 1);
-            }
-            setMonths(months);
-            
-            const soilMoisture = months.map((month) => generateRandomData(0, 20));
-            const etc = months.map((month) => generateRandomData(0, 30));
-            const irrigationWater = months.map((month) => generateRandomData(0, 40));
-            const rainfall = months.map((month) => generateRandomData(0, 50));
-            setData({ soilMoisture, etc, irrigationWater, rainfall, fieldInformation: data.fieldInformation });
-        }
-    }, [selectedCity]);
+        setData((prev) => ({ ...prev, fieldInformation: randomFieldInformation() }));
+    }, [selectedCropType, selectedCity]);
 
     return (
         <Grid container py={2} flexDirection="column">
