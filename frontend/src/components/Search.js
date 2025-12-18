@@ -32,7 +32,8 @@ const Search = ({
 			
 			const debugDiv = document.getElementById('search-debug');
 			if (debugDiv) {
-				debugDiv.innerHTML = hashValue;
+				// Avoid XSS by using textContent instead of innerHTML
+				debugDiv.textContent = hashValue;
 			}
 		}
 	}, []);
@@ -45,8 +46,9 @@ const Search = ({
 						variant="body2" 
 						color="textSecondary" 
 						sx={{ mb: 1 }}
-						dangerouslySetInnerHTML={{ __html: `Current search: ${searchFromHash}` }}
-					/>
+					>
+						{"Current search: "}{searchFromHash}
+					</Typography>
 				</div>
 			)}
 			<MUIInput

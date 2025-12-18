@@ -5,8 +5,6 @@ import queryString from "query-string";
 import { jwt, useSnackbar } from "../utils/index.js";
 import api from "../api/index.js";
 
-const DEFAULT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRlbW8iLCJpZCI6IjEyMzQ1Njc4OTAiLCJlbWFpbCI6ImRlbW9AZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTYxNjIzOTAyMn0.Xm5VHLqK4p0OqF8YnP1iU3jZ7vR9bE2mN4wK5lQ3gH8";
-
 const Auth = () => {
 	const location = useLocation();
 	const { error: error_ } = useSnackbar();
@@ -31,8 +29,8 @@ const Auth = () => {
 				if (error) {
 					setError(err);
 				} else {
-					const authToken = token || DEFAULT_TOKEN;
-					if (authToken) jwt.setToken(authToken);
+					// Set JWT only if provided; no insecure defaults
+					if (token) jwt.setToken(token);
 					const usr = await api.get("user/attempt-auth/");
 					if (isMounted) setState({ user: usr });
 				}
