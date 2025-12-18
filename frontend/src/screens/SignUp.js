@@ -26,7 +26,7 @@ const SignUp = () => {
 				error(message);
 			}
 		} catch (error_) {
-			console.log(error_);
+			// Error caught during sign up
 		}
 
 		setIsSubmitting(false);

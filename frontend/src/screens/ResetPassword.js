@@ -33,7 +33,7 @@ const ResetPassword = () => {
 				error(message);
 			}
 		} catch (error_) {
-			console.log(error_);
+			// Error caught during password reset
 		}
 
 		setIsSubmitting(false);
