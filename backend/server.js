@@ -61,6 +61,13 @@ app.all("/*", (_, res) => res.status(404).json({ error: "Not Found" }));
 
 app.use(Sentry.Handlers.errorHandler());
 
+// Global Error Handler - catch any remaining errors and return JSON
+app.use((err, req, res, next) => {
+	console.error("Uncaught error:", err);
+	Sentry.captureException(err);
+	return res.status(500).json({ error: "Internal Server Error" });
+});
+
 if (NODE_ENV !== "test") {
 	var port = PORT || 4000;
 	server.listen(port, () => console.log(chalk.bold.cyan(`>>> Live at http://localhost:${port}`)));
