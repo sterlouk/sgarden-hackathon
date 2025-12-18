@@ -36,6 +36,14 @@ app.use(Sentry.Handlers.requestHandler());
 
 app.use(helmet({
 	crossOriginResourcePolicy: false,
+	contentSecurityPolicy: {
+		directives: {
+			defaultSrc: ["'self'"],
+			scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+			styleSrc: ["'self'", "'unsafe-inline'"],
+			connectSrc: ["'self'", "localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"],
+		},
+	},
 }));
 app.use(setServerTimeout(2 * 60 * 1000));
 if (NODE_ENV === "development") app.use(morgan("dev", { skip: (req) => req.method === "OPTIONS" }));
