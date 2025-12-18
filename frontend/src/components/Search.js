@@ -29,27 +29,19 @@ const Search = ({
 		if (window.location.hash) {
 			const hashValue = decodeURIComponent(window.location.hash.substring(1));
 			setSearchFromHash(hashValue);
-			
-			const debugDiv = document.getElementById('search-debug');
-			if (debugDiv) {
-				// Avoid XSS by using textContent instead of innerHTML
-				debugDiv.textContent = hashValue;
-			}
 		}
 	}, []);
 
 	return (
 		<>
 			{searchFromHash && (
-				<div>
-					<Typography 
-						variant="body2" 
-						color="textSecondary" 
-						sx={{ mb: 1 }}
-					>
-						{"Current search: "}{searchFromHash}
-					</Typography>
-				</div>
+				<Typography 
+					variant="body2" 
+					color="textSecondary" 
+					sx={{ mb: 1 }}
+				>
+					{"Current search: "}{searchFromHash}
+				</Typography>
 			)}
 			<MUIInput
 				disableUnderline

@@ -6,7 +6,6 @@ import colors from "../_colors.scss";
 const Card = ({
 	children,
 	title = "",
-	htmlTitle = null,
 	titleExists = true,
 	titleColor = "white.main",
 	titleBackgroundColor = "primary",
@@ -40,14 +39,7 @@ const Card = ({
 				justifyContent="center"
 				alignItems="center"
 			>
-				{htmlTitle ? (
-					<Typography 
-						variant="body" 
-						component="h2" 
-						fontSize={titleFontSize} 
-						dangerouslySetInnerHTML={{ __html: htmlTitle }} 
-					/>
-				) : typeof title === "string" ? (
+				{typeof title === "string" ? (
 					<Typography variant="body" component="h2" fontSize={titleFontSize}>{title}</Typography>
 				) : (
 					title
