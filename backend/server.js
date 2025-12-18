@@ -47,6 +47,13 @@ app.use(helmet({
 	},
 	permittedCrossDomainPolicies: { permittedPolicies: "none" },
 }));
+
+// Permissions Policy Header - disable sensitive features
+app.use((req, res, next) => {
+	res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
+	next();
+});
+
 app.use(setServerTimeout(2 * 60 * 1000));
 if (NODE_ENV === "development") app.use(morgan("dev", { skip: (req) => req.method === "OPTIONS" }));
 app.use(cors({ credentials: true, origin: corsOrigin }));
