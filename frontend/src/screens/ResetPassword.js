@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useSnackbar } from "../utils/index.js";
 import { resetPassword } from "../api/index.js";
+
 import { createPasswordField, createSubmitButton } from "./authFormHelpers.js";
 import { AuthFormWrapper } from "./AuthFormWrapper.js";
 
@@ -54,9 +55,9 @@ const ResetPassword = () => {
 			isSubmitting={isSubmitting}
 			formContent={formContent}
 			validationSchema="resetPasswordSchema"
-			onSubmit={submitHandler}
 			title="Reset Password"
 			footerLinks={footerLinks}
+			onSubmit={submitHandler}
 		/>
 	);
 };

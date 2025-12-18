@@ -1,9 +1,9 @@
-describe('login', () => {
+describe("login", () => {
 	beforeEach(() => {
-		cy.visit('/')
-	})
+		cy.visit("/");
+	});
 
-	it('Home page', () => {
-		cy.contains("WELCOME").should("be.visible")
-	})
-})
+	it("Home page", () => {
+		cy.contains("WELCOME").should("be.visible");
+	});
+});

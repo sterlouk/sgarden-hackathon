@@ -80,12 +80,12 @@ const Accordion = ({
 			&& (
 				<AccordionDetails
 					classes={{
-						root: classes.accordionSubtitle,
+			            root: classes.accordionSubtitle,
 					}}
 				>
 					{typeof subtitle === "string"
-						? <Typography>{subtitle}</Typography>
-						: subtitle}
+			            ? <Typography>{subtitle}</Typography>
+			            : subtitle}
 				</AccordionDetails>
 			)}
 			<AccordionDetails

@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { makeStyles } from "@mui/styles";
 import { useNavigate } from "react-router-dom";
-import { Button, Grid, Menu, MenuItem, Typography } from "@mui/material";
+import { Button, Grid, Typography } from "@mui/material";
 import Image from "mui-image";
 import { ExpandMore } from "@mui/icons-material";
 
-import Accordion from "./Accordion.js";
-
 import { jwt } from "../utils/index.js";
+
+import Accordion from "./Accordion.js";
 
 const useStyles = makeStyles((theme) => ({
 	sidebar: {
@@ -49,7 +49,7 @@ const ButtonWithText = ({ text, icon, more, handler }) => (
 							<Button key={el.title} color="white" onClick={el.handler}>
 								<Typography sx={{ textTransform: "capitalize" }}>{el.title}</Typography>
 							</Button>
-						))}
+		                ))}
 					</Grid>
 				)}
 				alwaysExpanded={false}

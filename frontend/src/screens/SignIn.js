@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { useSnackbar } from "../utils/index.js";
 import { authenticate } from "../api/index.js";
+
 import { createUsernameField, createPasswordField, createSubmitButton } from "./authFormHelpers.js";
 import { AuthFormWrapper } from "./AuthFormWrapper.js";
 import { useShowPassword } from "./useShowPassword.js";
@@ -46,15 +47,15 @@ const SignIn = () => {
 
 	return (
 		<AuthFormWrapper
+			showDivider
 			isSubmitting={false}
 			formContent={formContent}
 			validationSchema="authenticationSchema"
-			onSubmit={submitHandler}
 			toResetForm={false}
 			title="WELCOME"
 			subtitle="to SGarden Platform"
 			footerLinks={footerLinks}
-			showDivider={true}
+			onSubmit={submitHandler}
 		/>
 	);
 };
