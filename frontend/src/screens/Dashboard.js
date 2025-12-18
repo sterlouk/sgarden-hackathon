@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Grid, Typography, Box } from "@mui/material";
 
-import Dropdown from "../components/Dropdown.js";
 import Card from "../components/Card.js";
 import Plot from "../components/Plot.js";
+import DashboardHeader from "../components/DashboardHeader.js";
 
 const availableCities = ["Thessaloniki", "Athens", "Patras"];
 const generateRandomData = (minimum = 0, maximum = 100) => {
@@ -48,18 +48,12 @@ const Dashboard = () => {
 
     return (
         <Grid container py={2} flexDirection="column">
-            <Typography variant="h4" gutterBottom color="white.main">
-                Dashboard
-            </Typography>
-            
-            <Grid item style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "20px" }}>
-                <Typography variant="body1" style={{ marginRight: "10px" }} color="white.main">Dashboard Area:</Typography>
-                <Dropdown
-                    items={availableCities.map((city) => ({ value: city, text: city }))}
-                    value={selectedCity}
-                    onChange={(event) => setSelectedCity(event.target.value)}
-                />
-            </Grid>
+            <DashboardHeader
+                title="Dashboard"
+                cities={availableCities}
+                selectedCity={selectedCity}
+                onCityChange={(event) => setSelectedCity(event.target.value)}
+            />
 
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>

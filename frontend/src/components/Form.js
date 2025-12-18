@@ -105,6 +105,26 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
+const renderFieldError = (formikProps, id) => {
+	return Boolean(formikProps.errors[id]) && (
+		<Typography textAlign="left" color="error" fontSize="small">
+			{formikProps.errors[id]}
+		</Typography>
+	);
+};
+
+const handleFieldChange = (formikProps, comp, value, event) => {
+	formikProps.handleChange({
+		target: {
+			name: comp.id,
+			value,
+		},
+	});
+
+	if (comp.onChange) {
+		comp.onChange(event ?? value);
+	}
+};
 const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, onSubmitProps, toResetForm = true }, ref) => {
 	const classes = useStyles();
 	const [formContent, setFormContent] = useState(content);
@@ -298,22 +318,9 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 										track={comp.track}
 										valueLabelDisplay={comp.displayLabel}
 										disabled={disabled || comp.disabled}
-										onChange={(event) => {
-											formikProps.handleChange({
-												target: {
-													name: comp.id,
-													value: event.target.value,
-												},
-											});
-											if (comp.onChange) {
-												comp.onChange(event);
-											}
-										}}
+										onChange={(event) => handleFieldChange(formikProps, comp, event.target.value, event)}
 									/>
-									{Boolean(formikProps.errors[comp.id])
-									&& (
-										<Typography textAlign="left" color="error" fontSize="small">{formikProps.errors[comp.id]}</Typography>
-									)}
+									{renderFieldError(formikProps, comp.id)}
 								</Grid>
 							)}
 							{comp.customType === "switch"
@@ -325,22 +332,9 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 										checked={formikProps.values[comp.id]}
 										size={comp.size}
 										disabled={disabled || comp.disabled}
-										onChange={(event) => {
-											formikProps.handleChange({
-												target: {
-													name: comp.id,
-													value: !formikProps.values[comp.id],
-												},
-											});
-											if (comp.onChange) {
-												comp.onChange(event);
-											}
-										}}
+										onChange={(event) => handleFieldChange(formikProps, comp, !formikProps.values[comp.id], event)}
 									/>
-									{Boolean(formikProps.errors[comp.id])
-									&& (
-										<Typography textAlign="left" color="error" fontSize="small">{formikProps.errors[comp.id]}</Typography>
-									)}
+									{renderFieldError(formikProps, comp.id)}
 								</Grid>
 							)}
 							{comp.customType === "date-picker"
@@ -355,22 +349,9 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 										views={comp.views || ["day", "month", "year"]}
 										background="secondary"
 										color="white"
-										onChange={(value) => {
-											formikProps.handleChange({
-												target: {
-													name: comp.id,
-													value,
-												},
-											});
-											if (comp.onChange) {
-												comp.onChange(event);
-											}
-										}}
+										onChange={(value) => handleFieldChange(formikProps, comp, value)}
 									/>
-									{Boolean(formikProps.errors[comp.id])
-									&& (
-										<Typography textAlign="left" color="error" fontSize="small">{formikProps.errors[comp.id]}</Typography>
-									)}
+									{renderFieldError(formikProps, comp.id)}
 								</Grid>
 							)}
 							{comp.customType === "button"

@@ -35,6 +35,43 @@ const buildMonthlySeries = (fromDate, toDate) => {
 };
 const randomFieldInformation = () => ({ date: randomDate(), value: generateRandomData(0, 100) });
 
+const createPlotAnnotations = (dataKey, months, data) => [
+    {
+        x: months[data[dataKey].indexOf(Math.min(...data[dataKey]))],
+        y: Math.min(...data[dataKey]),
+        xref: "x",
+        yref: "y",
+        text: `Min: ${Math.min(...data[dataKey]).toFixed(2)}%`,
+        showarrow: true,
+        font: { size: 16, color: "#ffffff" },
+        align: "center",
+        arrowhead: 2,
+        arrowsize: 1,
+        arrowwidth: 2,
+        arrowcolor: colors.primary,
+        borderpad: 4,
+        bgcolor: colors.primary,
+        opacity: 0.8,
+    },
+    {
+        x: months[data[dataKey].indexOf(Math.max(...data[dataKey]))],
+        y: Math.max(...data[dataKey]),
+        xref: "x",
+        yref: "y",
+        text: `Max: ${Math.max(...data[dataKey]).toFixed(2)}%`,
+        showarrow: true,
+        font: { size: 16, color: "#ffffff" },
+        align: "center",
+        arrowhead: 2,
+        arrowsize: 1,
+        arrowwidth: 2,
+        arrowcolor: colors.primary,
+        borderpad: 4,
+        bgcolor: colors.primary,
+        opacity: 0.8,
+    },
+];
+
 const Dashboard = () => {
     const [selectedCity, setSelectedCity] = useState("Thessaloniki");
     const [selectedCropType, setSelectedCropType] = useState(null);
@@ -193,48 +230,7 @@ const Dashboard = () => {
                                     titleFontSize={16}
                                     displayBar={false}
                                     height="250px"
-                                    annotations={[
-                                        {
-                                            x: months[data.soilMoisture.indexOf(Math.min(...data.soilMoisture))],
-                                            y: Math.min(...data.soilMoisture),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Min: ${Math.min(...data.soilMoisture).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                        {
-                                            x: months[data.soilMoisture.indexOf(Math.max(...data.soilMoisture))],
-                                            y: Math.max(...data.soilMoisture),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Max: ${Math.max(...data.soilMoisture).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                    ]}
+                                    annotations={createPlotAnnotations("soilMoisture", months, data)}
                                 />
                                 <Typography variant="body1" textAlign="center">
                                     {`Average: ${(data.soilMoisture.reduce((acc, curr) => acc + curr, 0) / data.soilMoisture.length).toFixed(2)}%`}
@@ -270,48 +266,7 @@ const Dashboard = () => {
                                     titleFontSize={16}
                                     displayBar={false}
                                     height="250px"
-                                    annotations={[
-                                        {
-                                            x: months[data.etc.indexOf(Math.min(...data.etc))],
-                                            y: Math.min(...data.etc),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Min: ${Math.min(...data.etc).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                        {
-                                            x: months[data.etc.indexOf(Math.max(...data.etc))],
-                                            y: Math.max(...data.etc),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Max: ${Math.max(...data.etc).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                    ]}
+                                    annotations={createPlotAnnotations("etc", months, data)}
                                 />
                                 <Typography variant="body1" textAlign="center">
                                     {`Average: ${(data.etc.reduce((acc, curr) => acc + curr, 0) / data.etc.length).toFixed(2)}%`}
@@ -347,48 +302,7 @@ const Dashboard = () => {
                                     titleFontSize={16}
                                     displayBar={false}
                                     height="250px"
-                                    annotations={[
-                                        {
-                                            x: months[data.irrigationWater.indexOf(Math.min(...data.irrigationWater))],
-                                            y: Math.min(...data.irrigationWater),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Min: ${Math.min(...data.irrigationWater).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                        {
-                                            x: months[data.irrigationWater.indexOf(Math.max(...data.irrigationWater))],
-                                            y: Math.max(...data.irrigationWater),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Max: ${Math.max(...data.irrigationWater).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                    ]}
+                                    annotations={createPlotAnnotations("irrigationWater", months, data)}
                                 />
                                 <Typography variant="body1" textAlign="center">
                                     {`Average: ${(data.irrigationWater.reduce((acc, curr) => acc + curr, 0) / data.irrigationWater.length).toFixed(2)}%`}
@@ -424,48 +338,7 @@ const Dashboard = () => {
                                     titleFontSize={16}
                                     displayBar={false}
                                     height="250px"
-                                    annotations={[
-                                        {
-                                            x: months[data.rainfall.indexOf(Math.min(...data.rainfall))],
-                                            y: Math.min(...data.rainfall),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Min: ${Math.min(...data.rainfall).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                        {
-                                            x: months[data.rainfall.indexOf(Math.max(...data.rainfall))],
-                                            y: Math.max(...data.rainfall),
-                                            xref: "x",
-                                            yref: "y",
-                                            text: `Max: ${Math.max(...data.rainfall).toFixed(2)}%`,
-                                            showarrow: true,
-                                            font: {
-                                                size: 16,
-                                                color: "#ffffff"
-                                            },
-                                            align: "center",
-                                            arrowhead: 2,
-                                            arrowsize: 1,
-                                            arrowwidth: 2,
-                                            arrowcolor: colors.primary,
-                                            borderpad: 4,
-                                            bgcolor: colors.primary,
-                                            opacity: 0.8
-                                        },
-                                    ]}
+                                    annotations={createPlotAnnotations("rainfall", months, data)}
                                 />
                                 <Typography variant="body1" textAlign="center">
                                     {`Average: ${(data.rainfall.reduce((acc, curr) => acc + curr, 0) / data.rainfall.length).toFixed(2)}%`}
