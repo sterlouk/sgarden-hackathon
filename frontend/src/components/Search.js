@@ -1,7 +1,7 @@
 import { Input as MUIInput, InputAdornment, Typography } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 import { makeStyles } from "@mui/styles";
-import { memo, useEffect, useState, useRef } from "react";
+import { memo, useEffect, useState } from "react";
 
 const useStyles = makeStyles(() => ({
 	search: {
@@ -25,32 +25,23 @@ const Search = ({
 		setValue(searchValue);
 	}, [searchValue]);
 
-	const debugDivRef = useRef(null);
-
 	useEffect(() => {
 		if (window.location.hash) {
 			const hashValue = decodeURIComponent(window.location.hash.substring(1));
 			setSearchFromHash(hashValue);
-			
-			if (debugDivRef.current) {
-				// Using ref to safely update DOM
-				debugDivRef.current.textContent = hashValue;
-			}
 		}
 	}, []);
 
 	return (
 		<>
 			{searchFromHash && (
-				<div ref={debugDivRef}>
-					<Typography 
-						variant="body2" 
-						color="textSecondary" 
-						sx={{ mb: 1 }}
-					>
-						{"Current search: "}{searchFromHash}
-					</Typography>
-				</div>
+				<Typography 
+					variant="body2" 
+					color="textSecondary" 
+					sx={{ mb: 1 }}
+				>
+					{"Current search: "}{searchFromHash}
+				</Typography>
 			)}
 			<MUIInput
 				disableUnderline

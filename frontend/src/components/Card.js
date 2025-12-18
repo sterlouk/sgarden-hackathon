@@ -6,7 +6,6 @@ import colors from "../_colors.scss";
 const Card = ({
 	children,
 	title = "",
-	htmlTitle = null,
 	titleExists = true,
 	titleColor = "white.main",
 	titleBackgroundColor = "primary",
