@@ -49,6 +49,7 @@ app.use(helmet({
 		},
 	},
 	permittedCrossDomainPolicies: { permittedPolicies: "none" },
+	noSniff: true,
 }));
 
 // Permissions Policy Header - disable sensitive features
