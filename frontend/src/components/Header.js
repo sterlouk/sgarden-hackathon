@@ -133,7 +133,7 @@ const Header = ({ isAuthenticated }) => {
 	const crumps = [];
 
 	for (const [ind, path] of pathnames.entries()) {
-		const text = capitalize(path);
+		let text = capitalize(path);
 		crumps.push(<CrumpLink to={`/${pathnames.slice(0, ind + 1).join("/")}`}>{text}</CrumpLink>);
 	}
 
@@ -157,7 +157,7 @@ const Header = ({ isAuthenticated }) => {
 										handler={button.handler}
 										more={button.more}
 									/>
-					            ))}
+								))}
 							</Box>
 							<Box sx={{ display: { xs: "flex", sm: "flex", md: "none" } }}>
 								<IconButton color="primary" onClick={handleMobileMenuOpen}><MoreIcon /></IconButton>
@@ -172,7 +172,12 @@ const Header = ({ isAuthenticated }) => {
 					<Breadcrumbs className="header-container">{crumps.map((e, ind) => <div key={`crump_${ind}`}>{e}</div>)}</Breadcrumbs>
 				</Paper>
 			)}
-			{isAuthenticated && renderMobileMenu}
+			{isAuthenticated
+			&& (
+				<>
+					{renderMobileMenu}
+				</>
+			)}
 		</>
 	);
 };

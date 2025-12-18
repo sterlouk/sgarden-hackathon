@@ -1,5 +1,4 @@
 import { Grid, Typography, Link, Divider } from "@mui/material";
-
 import Spinner from "../components/Spinner.js";
 import Form from "../components/Form.js";
 import AuthLayout, { useAuthLayoutStyles } from "../components/AuthLayout.js";
@@ -26,7 +25,7 @@ export const AuthFormWrapper = ({
 				</Grid>
 				<Grid item container direction="column" justifyContent="center" alignItems="space-between">
 					{footerLinks.map((link, idx) => (
-						<Grid key={idx} item>
+						<Grid item key={idx}>
 							<Typography variant="h7" color="white.main">
 								{link.label}
 							</Typography>

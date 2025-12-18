@@ -43,39 +43,12 @@
 			"iamnapo/react"
 		],
 		"rules": {
-			"unicorn/expiring-todo-comments": "off",
-			"unicorn/filename-case": "off",
-			"no-mixed-spaces-and-tabs": "off",
-			"react/jsx-closing-bracket-location": "off",
-			"max-len": ["warn", { "code": 140, "ignoreUrls": true, "ignoreStrings": true, "ignoreTemplateLiterals": true, "ignoreComments": true }],
-			"react/jsx-no-useless-fragment": "off",
-			"indent": "off",
-			"react/jsx-indent": "off",
-			"react/jsx-indent-props": "off",
-			"import/no-named-as-default": "off",
 			"unicorn/prefer-module": "off",
 			"unicorn/prefer-string-replace-all": "error",
 			"unicorn/prefer-at": "error",
 			"import/no-unresolved": "off"
 		},
 		"overrides": [
-			{
-				"files": ["cypress.config.js"],
-				"rules": {
-					"import/no-extraneous-dependencies": "off",
-					"no-unused-vars": "off"
-				}
-			},
-			{
-				"files": ["cypress/**/*.js", "cypress/**/*.ts"],
-				"env": { "mocha": true, "browser": true },
-				"globals": { "cy": "readonly", "Cypress": "readonly", "context": "readonly" },
-				"rules": {
-					"import/extensions": "off",
-					"unicorn/filename-case": "off",
-					"unicorn/no-empty-file": "off"
-				}
-			},
 			{
 				"files": "",
 				"rules": {
@@ -90,7 +63,7 @@
 				}
 			}
 		],
-		"ignorePatterns": ["build", "cypress/e2e/2-advanced-examples/**"]
+		"ignorePatterns": "build"
 	},
 	"dependencies": {
 		"@craco/craco": "^7.0.0",

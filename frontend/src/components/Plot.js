@@ -12,7 +12,7 @@ const Plot = ({
 	legendFontSize: plotLegendFontSize = 12, // Plot legend font size
 	scrollZoom: plotScrollZoom = false, // Enable or disable zoom in/out on scrolling
 	editable: plotEditable = false, // Enable or disable user edit on plot (e.g. plot title)
-	displayBar: plotDisplayBar, // Enable or disable mode bar with actions for user
+	displayBar: plotDisplayBar = undefined, // Enable or disable mode bar with actions for user
 	// (true for always display, false for never display, undefined for display on hover)
 	width: plotWidth = "100%",
 	height: plotHeight = "100%",

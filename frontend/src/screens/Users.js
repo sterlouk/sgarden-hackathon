@@ -11,8 +11,9 @@ import Search from "../components/Search.js";
 import Spinner from "../components/Spinner.js";
 import Form from "../components/Form.js";
 import Dropdown from "../components/Dropdown.js";
-import { isFuzzyMatch, useSnackbar, dayjs, jwt } from "../utils/index.js";
+import { isFuzzyMatch, useSnackbar, dayjs } from "../utils/index.js";
 import { getUsersData, inviteUser, removeUser, submitUserRole } from "../api/index.js";
+import { jwt } from "../utils/index.js";
 
 const Users = () => {
 	const { error, success } = useSnackbar();
@@ -79,7 +80,7 @@ const Users = () => {
 
 	const submitRole = async (userId, newRole) => {
 		setIsLoading(true);
-
+		
 		try {
 			const { success: successCode } = await submitUserRole(userId, newRole);
 
@@ -231,7 +232,7 @@ const Users = () => {
 											</Grid>
 											<Grid item xs={1} textAlign="center">
 												<Dropdown
-													items={["user", "admin"].map((rl) => ({ value: rl, text: rl }))}
+													items={["user", "admin"].map((role) => ({ value: role, text: role }))}
 													value={role}
 													onChange={(event) => submitRole(us._id, event.target.value)}
 												/>

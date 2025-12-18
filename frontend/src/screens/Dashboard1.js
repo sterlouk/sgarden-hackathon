@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import { Grid, Typography, Box } from "@mui/material";
-
+import { Grid, Typography, Box, Button, TextField } from "@mui/material";
 import Dropdown from "../components/Dropdown.js";
 import Card from "../components/Card.js";
 import Plot from "../components/Plot.js";
 import DatePicker from "../components/DatePicker.js";
 import Map from "../components/Map.js";
+
 import colors from "../_colors.scss";
 
 const availableCities = ["Thessaloniki", "Athens", "Patras"];
 const availableCropTypes = ["Soil Moisture", "ETc", "Irrigation Water", "Rainfall"];
 const generateRandomData = (min = 0, max = 10) => Math.random() * (max - min) + min;
-const randomDate = () => new Date(new Date(2020, 0, 1).getTime() + Math.random() * (Date.now() - new Date(2020, 0, 1).getTime()));
+const randomDate = () => new Date(new Date(2020, 0, 1).getTime() + Math.random() * (new Date().getTime() - new Date(2020, 0, 1).getTime()));
 const buildMonthlySeries = (fromDate, toDate) => {
     if (!fromDate || !toDate) {
         return { months: [], soilMoisture: [], etc: [], irrigationWater: [], rainfall: [] };
@@ -33,7 +33,6 @@ const buildMonthlySeries = (fromDate, toDate) => {
         rainfall: monthLabels.map(() => generateRandomData(0, 50)),
     };
 };
-
 const randomFieldInformation = () => ({ date: randomDate(), value: generateRandomData(0, 100) });
 
 const createPlotAnnotations = (dataKey, months, data) => [
@@ -79,13 +78,7 @@ const Dashboard = () => {
     const [fromDate, setFromDate] = useState(new Date(new Date().setFullYear(new Date().getFullYear() - 1)));
     const [toDate, setToDate] = useState(new Date());
     const [months, setMonths] = useState([]);
-    const [data, setData] = useState({
-        fieldInformation: randomFieldInformation(),
-        soilMoisture: [],
-        etc: [],
-        irrigationWater: [],
-        rainfall: [],
-    });
+    const [data, setData] = useState({ fieldInformation: randomFieldInformation(), soilMoisture: [], etc: [], irrigationWater: [], rainfall: [] });
 
     useEffect(() => {
         const series = buildMonthlySeries(fromDate, toDate);
@@ -99,77 +92,79 @@ const Dashboard = () => {
 
     return (
         <Grid container py={2} flexDirection="column">
-            <Typography gutterBottom variant="h4" color="white.main">
-                {"Dashboard"}
+            <Typography variant="h4" gutterBottom color="white.main">
+                Dashboard
             </Typography>
-
+            
             <Grid item style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "20px" }}>
-                <Typography variant="body1" style={{ marginRight: "10px" }} color="white.main">{"Dashboard Area:"}</Typography>
+                <Typography variant="body1" style={{ marginRight: "10px" }} color="white.main">Dashboard Area:</Typography>
                 <Dropdown
                     items={availableCities.map((city) => ({ value: city, text: city }))}
                     value={selectedCity}
                     onChange={(event) => setSelectedCity(event.target.value)}
                 />
             </Grid>
-
+            
             <Grid container spacing={2}>
                 <Grid container item sm={12} md={4} spacing={4}>
-                    <Grid item width="100%">
-                        <Card
-                            title="Field Information"
-                            footer={(
-                                <Box
-                                    width="100%"
-                                    height="100px"
-                                    display="flex"
-                                    flexDirection="column"
-                                    justifyContent="center"
-                                    alignItems="center"
-                                    backgroundColor="greyDark.main"
-                                    py={1}
-                                >
-                                    {selectedCropType && (
-                                        <>
-                                            <Typography variant="body">
-                                                {`Last reported value of ${selectedCropType} for ${selectedCity}`}
-                                            </Typography>
-                                            <Typography variant="body1" fontWeight="bold" color="primary.main">
-                                                {`${data.fieldInformation.date.toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })} - ${data.fieldInformation.value.toFixed(2)}%`}
-                                            </Typography>
-                                        </>
-                                    )}
-                                    {!selectedCropType && (
-                                        <Typography variant="body1" fontWeight="bold" color="white.main">
-                                            {"No crop type selected"}
-                                        </Typography>
-                                    )}
+                        <Grid item width="100%">
+                            <Card
+                                title="Field Information"
+                                footer={(
+                                    <Box
+                                        width="100%"
+                                        height="100px"
+                                        display="flex"
+                                        flexDirection="column"
+                                        justifyContent="center"
+                                        alignItems="center"
+                                        backgroundColor="greyDark.main"
+                                        py={1}
+                                    >
+                                        {selectedCropType && (
+                                            <>
+                                                <Typography variant="body">
+                                                    {`Last reported value of ${selectedCropType} for ${selectedCity}`}
+                                                </Typography>
+                                                <Typography variant="body1" fontWeight="bold" color="primary.main">
+                                                    {`${data.fieldInformation.date.toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })} - ${data.fieldInformation.value.toFixed(2)}%`}
+                                                </Typography>
+                                            </>
+                                        )}
+                                        {!selectedCropType && (
+                                            <>
+                                                <Typography variant="body1" fontWeight="bold" color="white.main">
+                                                    {"No crop type selected"}
+                                                </Typography>
+                                            </>
+                                        )}
+                                    </Box>
+                                )}
+                            >
+                                <Box height="100px" display="flex" alignItems="center" justifyContent="space-between">
+                                    <Typography width="fit-content" variant="subtitle1">Crop type:</Typography>
+                                    <Dropdown
+                                        id="cropTypeDropdown"
+                                        width="50%"
+                                        height="40px"
+                                        size="small"
+                                        placeholder="Select"
+                                        background="greyDark"
+                                        items={availableCropTypes.map((crType) => ({ value: crType, text: crType }))}
+                                        value={selectedCropType}
+                                        onChange={(event) => setSelectedCropType(event.target.value)}
+                                    />
                                 </Box>
-                            )}
-                        >
-                            <Box height="100px" display="flex" alignItems="center" justifyContent="space-between">
-                                <Typography width="fit-content" variant="subtitle1">{"Crop type:"}</Typography>
-                                <Dropdown
-                                    id="cropTypeDropdown"
-                                    width="50%"
-                                    height="40px"
-                                    size="small"
-                                    placeholder="Select"
-                                    background="greyDark"
-                                    items={availableCropTypes.map((crType) => ({ value: crType, text: crType }))}
-                                    value={selectedCropType}
-                                    onChange={(event) => setSelectedCropType(event.target.value)}
-                                />
-                            </Box>
-                        </Card>
-                    </Grid>
-                    <Grid item width="100%">
-                        <Card title="Interactive Map">
-                            <Map />
-                            {/* <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-
+                            </Card>
+                        </Grid>
+                        <Grid item width="100%">
+                            <Card title="Interactive Map">
+                                <Map />
+                                {/* <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+                                    
                                 </Box> */}
-                        </Card>
-                    </Grid>
+                            </Card>
+                        </Grid>
                 </Grid>
 
                 <Grid item sm={12} md={8}>
@@ -214,7 +209,7 @@ const Dashboard = () => {
                                             type: "lines",
                                             fill: "tozeroy",
                                             color: "third",
-                                            line: { shape: "spline", smoothing: 1 },
+                                            line: { shape: "spline", smoothing: 1},
                                             markerSize: 0,
                                             hoverinfo: "none",
                                         },
@@ -250,7 +245,7 @@ const Dashboard = () => {
                                             type: "lines",
                                             fill: "tozeroy",
                                             color: "third",
-                                            line: { shape: "spline", smoothing: 1 },
+                                            line: { shape: "spline", smoothing: 1},
                                             markerSize: 0,
                                             hoverinfo: "none",
                                         },
@@ -286,7 +281,7 @@ const Dashboard = () => {
                                             type: "lines",
                                             fill: "tozeroy",
                                             color: "third",
-                                            line: { shape: "spline", smoothing: 1 },
+                                            line: { shape: "spline", smoothing: 1},
                                             markerSize: 0,
                                             hoverinfo: "none",
                                         },
@@ -322,7 +317,7 @@ const Dashboard = () => {
                                             type: "lines",
                                             fill: "tozeroy",
                                             color: "third",
-                                            line: { shape: "spline", smoothing: 1 },
+                                            line: { shape: "spline", smoothing: 1},
                                             markerSize: 0,
                                             hoverinfo: "none",
                                         },

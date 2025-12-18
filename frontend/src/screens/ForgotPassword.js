@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 import { useSnackbar } from "../utils/index.js";
 import { forgotPassword } from "../api/index.js";
-
 import { createUsernameField, createSubmitButton } from "./authFormHelpers.js";
 import { AuthFormWrapper } from "./AuthFormWrapper.js";
 
@@ -45,10 +44,10 @@ const ForgotPassword = () => {
 			isSubmitting={isSubmitting}
 			formContent={formContent}
 			validationSchema="forgotPasswordSchema"
+			onSubmit={submitHandler}
 			title="Trouble signing in?"
 			subtitle="Please enter your username and you will receive a link to create a new password."
 			footerLinks={footerLinks}
-			onSubmit={submitHandler}
 		/>
 	);
 };

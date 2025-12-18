@@ -27,10 +27,10 @@ const Search = ({
 
 	useEffect(() => {
 		if (window.location.hash) {
-			const hashValue = decodeURIComponent(window.location.hash.slice(1));
+			const hashValue = decodeURIComponent(window.location.hash.substring(1));
 			setSearchFromHash(hashValue);
-
-			const debugDiv = document.querySelector("#search-debug");
+			
+			const debugDiv = document.getElementById('search-debug');
 			if (debugDiv) {
 				// Avoid XSS by using textContent instead of innerHTML
 				debugDiv.textContent = hashValue;
@@ -42,13 +42,12 @@ const Search = ({
 		<>
 			{searchFromHash && (
 				<div>
-					<Typography
-						variant="body2"
-						color="textSecondary"
+					<Typography 
+						variant="body2" 
+						color="textSecondary" 
 						sx={{ mb: 1 }}
 					>
-						{"Current search: "}
-						{searchFromHash}
+						{"Current search: "}{searchFromHash}
 					</Typography>
 				</div>
 			)}

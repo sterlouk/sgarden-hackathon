@@ -105,11 +105,13 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const renderFieldError = (formikProps, id) => Boolean(formikProps.errors[id]) && (
-	<Typography textAlign="left" color="error" fontSize="small">
-		{formikProps.errors[id]}
-	</Typography>
-);
+const renderFieldError = (formikProps, id) => {
+	return Boolean(formikProps.errors[id]) && (
+		<Typography textAlign="left" color="error" fontSize="small">
+			{formikProps.errors[id]}
+		</Typography>
+	);
+};
 
 const handleFieldChange = (formikProps, comp, value, event) => {
 	formikProps.handleChange({
@@ -123,7 +125,6 @@ const handleFieldChange = (formikProps, comp, value, event) => {
 		comp.onChange(event ?? value);
 	}
 };
-
 const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, onSubmitProps, toResetForm = true }, ref) => {
 	const classes = useStyles();
 	const [formContent, setFormContent] = useState(content);
@@ -197,10 +198,10 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 									helperText={formikProps.errors[comp.id]}
 									disabled={disabled || comp.disabled}
 									onChange={(event) => {
-							            formikProps.handleChange(event);
-							            if (comp.onChange) {
-							                comp.onChange(event);
-							            }
+										formikProps.handleChange(event);
+										if (comp.onChange) {
+											comp.onChange(event);
+										}
 									}}
 								/>
 							)}
@@ -218,15 +219,15 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 										filled={false}
 										background="secondary"
 										onChange={(event) => {
-							                formikProps.handleChange({
-							                    target: {
-							                        name: comp.id,
-							                        value: event.target.value,
-							                    },
-							                });
-							                if (comp.onChange) {
-							                    comp.onChange(event);
-							                }
+											formikProps.handleChange({
+												target: {
+													name: comp.id,
+													value: event.target.value,
+												},
+											});
+											if (comp.onChange) {
+												comp.onChange(event);
+											}
 										}}
 									/>
 								</Grid>
@@ -243,24 +244,24 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 											size={comp.size}
 											color={comp.color}
 											sx={{
-							                    color: `${comp.color}.main`,
-							                    "&.Mui-checked": {
-							                        color: `${comp.color}.main`,
-							                    },
+												color: `${comp.color}.main`,
+												"&.Mui-checked": {
+													color: `${comp.color}.main`,
+												},
 											}}
 											icon={comp.icon}
 											checkedIcon={comp.checkedIcon}
 											disabled={disabled || comp.disabled}
 											onChange={(event) => {
-							                    formikProps.handleChange({
-							                        target: {
-							                            name: comp.id,
-							                            value: !formikProps.values[comp.id],
-							                        },
-							                    });
-							                    if (comp.onChange) {
-							                        comp.onChange(event);
-							                    }
+												formikProps.handleChange({
+													target: {
+														name: comp.id,
+														value: !formikProps.values[comp.id],
+													},
+												});
+												if (comp.onChange) {
+													comp.onChange(event);
+												}
 											}}
 										/>
 									</Grid>
@@ -283,15 +284,15 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 										disabled={disabled || comp.disabled}
 										items={comp.items}
 										onChange={(event) => {
-							                formikProps.handleChange({
-							                    target: {
-							                        name: comp.id,
-							                        value: event.target.value,
-							                    },
-							                });
-							                if (comp.onChange) {
-							                    comp.onChange(event);
-							                }
+											formikProps.handleChange({
+												target: {
+													name: comp.id,
+													value: event.target.value,
+												},
+											});
+											if (comp.onChange) {
+												comp.onChange(event);
+											}
 										}}
 									/>
 									{Boolean(formikProps.errors[comp.id])
@@ -355,9 +356,9 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 							)}
 							{comp.customType === "button"
 							&& (
-							    comp.buttonColor === "third"
-							        ? (
-								<HighlightBackgroundButton
+								comp.buttonColor === "third"
+									? (
+										<HighlightBackgroundButton
 											id={comp.id}
 											type={comp.type}
 											disabled={formikProps.isSubmitting || disabled}
@@ -366,9 +367,9 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 											width="100%"
 											title={comp.text}
 										/>
-							        )
-							        : (
-								<SecondaryBackgroundButton
+									)
+									: (
+										<SecondaryBackgroundButton
 											id={comp.id}
 											type={comp.type}
 											disabled={formikProps.isSubmitting || disabled}
@@ -377,7 +378,7 @@ const Form = forwardRef(({ disabled: dsb, content, validationSchema, onSubmit, o
 											width="100%"
 											title={comp.text}
 										/>
-							        )
+									)
 							)}
 						</div>
 					))}

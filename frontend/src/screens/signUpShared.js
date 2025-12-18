@@ -1,6 +1,3 @@
-// imports placed at bottom to avoid hoisting issues in bundlers
-import { createUsernameField, createEmailField, createPasswordField, createSubmitButton } from "./authFormHelpers.js";
-
 export const buildSignUpFormContent = ({ showPassword, handleShowPassword, email = "", emailDisabled = false }) => [
 	// username
 	{ ...createUsernameField() },
@@ -19,3 +16,6 @@ export const signUpFooterLinks = [
 
 export const signUpTitle = "Sign Up";
 export const signUpSubtitle = "to SGarden Platform";
+
+// imports placed at bottom to avoid hoisting issues in bundlers
+import { createUsernameField, createEmailField, createPasswordField, createSubmitButton } from "./authFormHelpers.js";
