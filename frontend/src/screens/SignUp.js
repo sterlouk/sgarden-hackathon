@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useSnackbar } from "../utils/index.js";
 import { signUp } from "../api/index.js";
-import { createUsernameField, createEmailField, createPasswordField, createSubmitButton } from "./authFormHelpers.js";
+import { buildSignUpFormContent, signUpFooterLinks, signUpTitle, signUpSubtitle } from "./signUpShared.js";
 import { AuthFormWrapper } from "./AuthFormWrapper.js";
 import { useShowPassword } from "./useShowPassword.js";
 
@@ -32,17 +32,8 @@ const SignUp = () => {
 		setIsSubmitting(false);
 	};
 
-	const formContent = [
-		createUsernameField(),
-		createEmailField(),
-		createPasswordField(showPassword, handleShowPassword),
-		createPasswordField(showPassword, handleShowPassword, "confirmPassword", "Re-type Password"),
-		createSubmitButton("Sign Up"),
-	];
-
-	const footerLinks = [
-		{ label: "Otherwise, ", text: "Sign In", href: "/" },
-	];
+	const formContent = buildSignUpFormContent({ showPassword, handleShowPassword });
+	const footerLinks = signUpFooterLinks;
 
 	return (
 		<AuthFormWrapper
@@ -50,8 +41,8 @@ const SignUp = () => {
 			formContent={formContent}
 			validationSchema="signUpSchema"
 			onSubmit={submitHandler}
-			title="Sign Up"
-			subtitle="to SGarden Platform"
+			title={signUpTitle}
+			subtitle={signUpSubtitle}
 			footerLinks={footerLinks}
 		/>
 	);
