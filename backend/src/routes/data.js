@@ -1,6 +1,6 @@
 import express from "express";
 import Sentry from "@sentry/node";
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, unlinkSync, renameSync, mkdirSync, realpathSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, realpathSync } from "fs";
 import { join, resolve, sep } from "path";
 
 const router = express.Router({ mergeParams: true });
