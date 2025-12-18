@@ -1,7 +1,7 @@
 import express from "express";
 import Sentry from "@sentry/node";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, unlinkSync, renameSync } from "fs";
-import { join } from "path";
+import { join, resolve, sep } from "path";
 
 const router = express.Router({ mergeParams: true });
 
@@ -178,22 +178,30 @@ router.get("/browse-files", (req, res) => {
 router.get("/config/load", (req, res) => {
 	try {
 		const { configFile } = req.query;
-		
+
 		if (!configFile) {
 			return res.status(400).json({ message: "Config file required" });
 		}
-		
-		if (!configFile.endsWith('.json')) {
-			return res.status(400).json({ message: "Only JSON config files allowed" });
+
+		// Allow only simple file names like foo.json or foo-bar.json
+		const filePattern = /^[A-Za-z0-9_.-]+\.json$/;
+		if (!filePattern.test(configFile)) {
+			return res.status(400).json({ message: "Invalid config file name" });
 		}
-		
-		const configPath = join("./config", configFile);
-		
+
+		const baseDir = resolve("./config");
+		const configPath = resolve(baseDir, configFile);
+
+		// Prevent path traversal by ensuring the resolved path stays under baseDir
+		if (!configPath.startsWith(baseDir + sep)) {
+			return res.status(400).json({ message: "Invalid config file path" });
+		}
+
 		if (existsSync(configPath)) {
-			const config = readFileSync(configPath, 'utf8');
+			const config = readFileSync(configPath, "utf8");
 			return res.json({ success: true, config: JSON.parse(config) });
 		}
-		
+
 		return res.status(404).json({ message: "Config file not found" });
 	} catch (error) {
 		Sentry.captureException(error);
