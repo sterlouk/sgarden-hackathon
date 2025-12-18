@@ -6,8 +6,6 @@ import validationSchemas from "./validation-schemas.js";
 
 const { compareSync, hashSync, genSaltSync } = bcrypt;
 
-const title = "Utility helpers";
-
 const helpers = {
 	passwordDigest: (password, saltWorkFactor = 10) => pipe(
 		genSaltSync,
@@ -24,7 +22,6 @@ const helpers = {
 	jwtSign: (payload) => jwt.sign(payload, process.env.SERVER_SECRET),
 	minPassword: validationSchemas.minPassword,
 	validate: async (req, res, next, schema) => {
-        var validationResult = false;
 		try {
 			const { body } = req;
             console.log("Validating schema:", schema);
