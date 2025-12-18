@@ -29,6 +29,9 @@ init();
 const app = express();
 const server = http.Server(app);
 
+// Disable X-Powered-By header to prevent information leakage
+app.disable('x-powered-by');
+
 // CORS configuration - load from environment variable or default
 const corsOrigin = CLIENT_URL || FRONTEND_URL || "http://localhost:3002";
 
