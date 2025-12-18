@@ -19,7 +19,7 @@ import { init } from "./src/utils/index.js";
 
 // const unusedVariable = "I am not used";
 
-const { NODE_ENV, PORT } = process.env;
+const { NODE_ENV, PORT, CLIENT_URL, FRONTEND_URL } = process.env;
 
 Sentry.init({ enabled: NODE_ENV === "production" });
 
@@ -29,6 +29,9 @@ init();
 const app = express();
 const server = http.Server(app);
 
+// CORS configuration - load from environment variable or default
+const corsOrigin = CLIENT_URL || FRONTEND_URL || "http://localhost:3002";
+
 app.use(Sentry.Handlers.requestHandler());
 
 app.use(helmet({
@@ -36,7 +39,7 @@ app.use(helmet({
 }));
 app.use(setServerTimeout(2 * 60 * 1000));
 if (NODE_ENV === "development") app.use(morgan("dev", { skip: (req) => req.method === "OPTIONS" }));
-app.use(cors({ credentials: true, origin: true }));
+app.use(cors({ credentials: true, origin: corsOrigin }));
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 app.use((req, _, next) => { req.body ||= {}; next(); });
