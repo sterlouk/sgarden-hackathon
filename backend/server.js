@@ -29,6 +29,8 @@ init();
 const app = express();
 const server = http.Server(app);
 
+app.disable("x-powered-by");
+
 app.use(Sentry.Handlers.requestHandler());
 
 app.use(helmet({
@@ -42,6 +44,8 @@ app.use(helmet({
 			connectSrc: ["'self'", "*"],
 			frameAncestors: ["'self'"],
 			objectSrc: ["'none'"],
+			baseSrc: ["'self'"],
+			formAction: ["'self'"],
 		},
 	},
 	frameguard: { action: "deny" },
