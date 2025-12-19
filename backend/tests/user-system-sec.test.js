@@ -61,10 +61,10 @@ test("/system/spawn accepts safe input but does not execute", async (t) => {
 });
 
 // compress-files
-test("/compress-files rejects invalid filename", async (t) => {
+test("/compress-files rejects invalid output name", async (t) => {
 	const { server, client } = makeServer();
 	const { statusCode, body } = await client.post("api/user-system/compress-files", {
-		json: { filename: "../../etc/passwd", outputName: "out" },
+		json: { outputName: "../../etc/passwd" },
 	});
 	server.close();
 	t.is(statusCode, 400);
