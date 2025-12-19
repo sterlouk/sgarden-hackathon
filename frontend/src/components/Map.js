@@ -1,19 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ComposableMap, Geographies, Geography, Annotation, ZoomableGroup } from "react-simple-maps";
-import { makeStyles } from "@mui/styles";
+import { useEffect, useRef, useState } from "react";
+import { ComposableMap, Geographies, Geography, Annotation, Graticule, Line, Marker } from "react-simple-maps";
 import { memo } from "react";
 
 import colors from "../_colors.scss";
 import { Grid } from "@mui/material";
-
-const useStyles = makeStyles(() => ({
-	accordion: {
-		width: "100%!important",
-		borderRadius: "10px!important",
-		backgroundColor: "transparent",
-		boxShadow: "none",
-	},
-}));
 
 /*
 	Projection types:
@@ -73,7 +63,6 @@ const Map = ({
 	guides = { back: false, front: true, fill: "transparent", stroke: "white", step: [20, 20] },
 	lines = [],
 	markers = [{ coordinates: [-101, 53], fill: "red" }],
-	annotations = [],
 }) => {
 	const [mapWidth, setMapWidth] = useState(0);
 	const [mapHeight, setMapHeight] = useState(0);
