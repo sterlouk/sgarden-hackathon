@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ComposableMap, Geographies, Geography, Annotation, Graticule, Line, ZoomableGroup, Marker } from "react-simple-maps";
+import { ComposableMap, Geographies, Geography, Annotation, ZoomableGroup } from "react-simple-maps";
 import { makeStyles } from "@mui/styles";
 import { memo } from "react";
 
