@@ -53,7 +53,7 @@ app.all("/*", (_, res) => res.json({ body: "It works!" }));
 app.use(Sentry.Handlers.errorHandler());
 
 if (NODE_ENV !== "test") {
-	var port = PORT || 4000;
+	const port = PORT || 4000;
 	server.listen(port, () => console.log(chalk.bold.cyan(`>>> Live at http://localhost:${port}`)));
 }
 
