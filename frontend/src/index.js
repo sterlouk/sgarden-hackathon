@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { Route, Routes, BrowserRouter as Router, useLocation } from "react-router-dom";
 import { StyledEngineProvider, ThemeProvider, createTheme } from "@mui/material/styles";
-import { CacheProvider } from "@emotion/react";
 import * as Sentry from "@sentry/browser";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -32,7 +31,6 @@ import Dashboard1 from "./screens/Dashboard1.js";
 import Dashboard2 from "./screens/Dashboard2.js";
 import { adjustColors, jwt, colorSuggestions } from "./utils/index.js";
 import Map from "./components/Map.js";
-import createEmotionCache from "./create-emotion-cache.js";
 
 const {
 	NODE_ENV,
@@ -86,36 +84,34 @@ const App = () => {
 	}, [location]);
 
 	return (
-		<CacheProvider value={createEmotionCache()}>
-			<StyledEngineProvider injectFirst>
-				<CssBaseline />
-				<ThemeProvider theme={theme}>
-					<ErrorBoundary FallbackComponent={ErrorFallback}>
-						<LocalizationProvider dateAdapter={AdapterDayjs}>
-							<Header isAuthenticated={authenticated} />
-							<main style={{ position: "relative", zIndex: 0, height: `calc(100vh - ${authenticated ? "160" : "70"}px)` }}>
-								<Routes>
-									<Route index element={<GuestOnly c={<SignIn />} />} />
-									<Route path="auth" element={<GuestOnly c={<Auth />} />} />
-									<Route path="forgot-password" element={<GuestOnly c={<ForgotPassword />} />} />
-									<Route path="reset-password" element={<GuestOnly c={<ResetPassword />} />} />
-									<Route path="sign-up" element={<GuestOnly c={<SignUp />} />} />
-									<Route path="register" element={<GuestOnly c={<InvitedSignUp />} />} />
-									<Route path="users" element={<AdminOnly c={<Users />} />} />
-									<Route path="dashboard" element={<Protected c={<Dashboard />} />} />
-									<Route path="dashboard1" element={<Protected c={<Dashboard1 />} />} />
-									<Route path="dashboard2" element={<Protected c={<Dashboard2 />} />} />
-									<Route path="map" element={<Protected c={<Map />} />} />
-									<Route path="*" element={<NotFound />} />
-								</Routes>
-							</main>
-							{authenticated && <Footer /> }
-							<Snackbar />
-						</LocalizationProvider>
-					</ErrorBoundary>
-				</ThemeProvider>
-			</StyledEngineProvider>
-		</CacheProvider>
+		<StyledEngineProvider injectFirst>
+			<CssBaseline />
+			<ThemeProvider theme={theme}>
+				<ErrorBoundary FallbackComponent={ErrorFallback}>
+					<LocalizationProvider dateAdapter={AdapterDayjs}>
+						<Header isAuthenticated={authenticated} />
+						<main style={{ position: "relative", zIndex: 0, height: `calc(100vh - ${authenticated ? "160" : "70"}px)` }}>
+							<Routes>
+								<Route index element={<GuestOnly c={<SignIn />} />} />
+								<Route path="auth" element={<GuestOnly c={<Auth />} />} />
+								<Route path="forgot-password" element={<GuestOnly c={<ForgotPassword />} />} />
+								<Route path="reset-password" element={<GuestOnly c={<ResetPassword />} />} />
+								<Route path="sign-up" element={<GuestOnly c={<SignUp />} />} />
+								<Route path="register" element={<GuestOnly c={<InvitedSignUp />} />} />
+								<Route path="users" element={<AdminOnly c={<Users />} />} />
+								<Route path="dashboard" element={<Protected c={<Dashboard />} />} />
+								<Route path="dashboard1" element={<Protected c={<Dashboard1 />} />} />
+								<Route path="dashboard2" element={<Protected c={<Dashboard2 />} />} />
+								<Route path="map" element={<Protected c={<Map />} />} />
+								<Route path="*" element={<NotFound />} />
+							</Routes>
+						</main>
+						{authenticated && <Footer /> }
+						<Snackbar />
+					</LocalizationProvider>
+				</ErrorBoundary>
+			</ThemeProvider>
+		</StyledEngineProvider>
 	);
 };
 
