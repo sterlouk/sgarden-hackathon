@@ -34,7 +34,7 @@ const rootApi = ky.extend({
 			},
 		],
 		afterResponse: [
-			(_req, _opts, res) => {
+			(res) => {
 				const { status } = res;
 				if (status === 500) {
 					return new Response(JSON.stringify({ success: false }), { status: 200 });
