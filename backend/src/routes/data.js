@@ -8,7 +8,15 @@ const router = express.Router({ mergeParams: true });
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
 const baseUploads = resolve("./uploads");
 
-const sanitizeFilename = (filename) => filename.replace(/[\r\n]/g, "");
+const sanitizeFilename = (filename) => {
+	// Remove dangerous characters and path traversal attempts
+	let safe = filename.replace(/[\r\n]/g, "");
+	// Reject if contains path separators or parent directory references
+	if (safe.includes("..") || safe.includes("/") || safe.includes("\\")) {
+		throw new Error("Invalid filename");
+	}
+	return safe;
+};
 
 const verifySymlinkSafe = (resolvedPath, baseDir) => {
 	try {
@@ -76,7 +84,12 @@ router.get("/download-report", (req, res) => {
 		}
 
 		const baseDir = resolve("./reports");
-		const safeName = sanitizeFilename(reportName);
+		let safeName;
+		try {
+			safeName = sanitizeFilename(reportName);
+		} catch (err) {
+			return res.status(400).json({ message: "Invalid report name" });
+		}
 		const reportPath = resolve(baseDir, safeName);
 		const relativePath = pathRelative(baseDir, reportPath);
 		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
@@ -92,7 +105,6 @@ router.get("/download-report", (req, res) => {
 
 		if (existsSync(reportPath)) {
 			const content = readFileSync(reportPath);
-			const safeName = sanitizeFilename(reportName);
 			res.setHeader("Content-Type", "text/plain; charset=utf-8");
 			res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`);
 			return res.send(content);
@@ -243,7 +255,12 @@ router.get("/export-csv", (req, res) => {
 		}
 
 		const baseDir = resolve("./data");
-		const safeName = sanitizeFilename(dataFile);
+		let safeName;
+		try {
+			safeName = sanitizeFilename(dataFile);
+		} catch (err) {
+			return res.status(400).json({ message: "Invalid data file name" });
+		}
 		const csvPath = resolve(baseDir, safeName);
 		const relativePath = pathRelative(baseDir, csvPath);
 		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
@@ -259,7 +276,6 @@ router.get("/export-csv", (req, res) => {
 
 		if (existsSync(csvPath)) {
 			const csvData = readFileSync(csvPath, 'utf8');
-			const safeName = sanitizeFilename(dataFile);
 			
 			res.setHeader('Content-Type', 'text/csv; charset=utf-8');
 			res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
@@ -286,14 +302,18 @@ router.get("/browse-files", (req, res) => {
 			return res.status(400).json({ message: "Directory required" });
 		}
 
+		// For directories, check for path traversal but allow forward slashes
+		if (directory.includes("..") || directory.includes("\\")) {
+			return res.status(400).json({ message: "Invalid directory name" });
+		}
+
 		const dirPattern = /^[A-Za-z0-9_./-]*$/;
 		if (!dirPattern.test(directory)) {
 			return res.status(400).json({ message: "Invalid directory name" });
 		}
 
 		const baseDir = resolve("./files");
-		const safeDir = sanitizeFilename(directory);
-		const dirPath = resolve(baseDir, safeDir);
+		const dirPath = resolve(baseDir, directory);
 		const relativeDir = pathRelative(baseDir, dirPath);
 		if (relativeDir.startsWith("..") || relativeDir.includes(`..${sep}`)) {
 			return res.status(400).json({ message: "Invalid directory path" });

@@ -68,3 +68,12 @@ typings/
 .npmrc
 
 src/assets/uploads/*
+
+# Local test and fixture directories
+files/
+test-config/
+test-data/
+test-files/
+test-reports/
+test-templates/
+test-uploads/
