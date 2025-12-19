@@ -78,7 +78,6 @@ const Map = ({
 	const [mapWidth, setMapWidth] = useState(0);
 	const [mapHeight, setMapHeight] = useState(0);
 	const containerRef = useRef(null);
-	const classes = useStyles();
 
 	useEffect(() => {
 		if (containerRef?.current) {
