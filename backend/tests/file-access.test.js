@@ -1,29 +1,14 @@
-import http from "node:http";
-
 import test from "ava";
-import express from "express";
-import got from "got";
 
 import dataRouter from "../src/routes/data.js";
+import { setupTestServer, teardownTestServer } from "./test-helpers.js";
 
 test.before((t) => {
-	const app = express();
-	app.use(express.json({ limit: "1mb" }));
-	// Mock user middleware - add user to res.locals for auth checks
-	app.use((req, res, next) => {
-		res.locals = { user: { id: "test-user" } };
-		next();
-	});
-	app.use("/api/data", dataRouter);
-
-	const server = http.createServer(app).listen();
-	const { port } = server.address();
-	t.context.server = server;
-	t.context.got = got.extend({ responseType: "json", prefixUrl: `http://localhost:${port}` });
+	setupTestServer(t, dataRouter, "/api/data");
 });
 
 test.after.always((t) => {
-	if (t.context.server) t.context.server.close();
+	teardownTestServer(t);
 });
 
 test("download-report blocks traversal", async (t) => {
