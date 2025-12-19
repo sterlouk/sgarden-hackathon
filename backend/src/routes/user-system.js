@@ -248,9 +248,13 @@ router.post("/compress-files", (req, res) => {
 			return res.status(400).json({ message: "Invalid file name" });
 		}
 
+		// Additional validation to prevent path traversal
+		if (outputName.includes("/") || outputName.includes("\\") || outputName.includes("..")) {
+			return res.status(400).json({ message: "Invalid file name" });
+		}
+
 		const baseDir = resolve("./files");
-		const safeOut = outputName;
-		const targetZip = resolve(baseDir, `${safeOut}.zip`);
+		const targetZip = resolve(baseDir, `${outputName}.zip`);
 		const relativeZip = pathRelative(baseDir, targetZip);
 		if (relativeZip.startsWith("..") || relativeZip.includes(`..${sep}`)) {
 			return res.status(400).json({ message: "Invalid path" });
