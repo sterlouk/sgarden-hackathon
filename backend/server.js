@@ -33,7 +33,26 @@ app.use(Sentry.Handlers.requestHandler());
 
 app.use(helmet({
 	crossOriginResourcePolicy: false,
+	contentSecurityPolicy: {
+		directives: {
+			defaultSrc: ["'self'", "*"],
+			scriptSrc: ["'self'", "'unsafe-inline'", "*"],
+			styleSrc: ["'self'", "'unsafe-inline'", "*"],
+			imgSrc: ["'self'", "*", "data:", "blob:"],
+			connectSrc: ["'self'", "*"],
+			frameAncestors: ["'self'"],
+			objectSrc: ["'none'"],
+		},
+	},
+	frameguard: { action: "deny" },
+	noSniff: true,
+	referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+	hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
+app.use((req, res, next) => {
+	res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
+	next();
+});
 app.use(setServerTimeout(2 * 60 * 1000));
 if (NODE_ENV === "development") app.use(morgan("dev", { skip: (req) => req.method === "OPTIONS" }));
 app.use(cors({ credentials: true, origin: true }));
