@@ -304,7 +304,7 @@ router.get("/browse-files", (req, res) => {
 
 		// For directories, check for path traversal but allow forward slashes
 		if (directory.includes("..") || directory.includes("\\")) {
-			return res.status(400).json({ message: "Invalid directory name" });
+			return res.status(400).json({ message: "Invalid directory path" });
 		}
 
 		const dirPattern = /^[A-Za-z0-9_./-]*$/;
