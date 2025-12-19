@@ -75,11 +75,6 @@ router.get("/download-report", (req, res) => {
 			return res.status(400).json({ message: "Invalid report name" });
 		}
 
-		// Additional check for path traversal patterns
-		if (reportName.includes("..") || reportName.includes("/") || reportName.includes("\\")) {
-			return res.status(400).json({ message: "Invalid report name" });
-		}
-
 		const baseDir = resolve("./reports");
 		const safeName = sanitizeFilename(reportName);
 		const reportPath = resolve(baseDir, safeName);
@@ -87,7 +82,7 @@ router.get("/download-report", (req, res) => {
 		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
 			return res.status(400).json({ message: "Invalid report path" });
 		}
-		if (!reportPath.startsWith(baseDir + sep) && reportPath !== baseDir) {
+		if (!reportPath.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid report path" });
 		}
 
@@ -128,11 +123,6 @@ router.get("/render-page", (req, res) => {
 			return res.status(400).json({ message: "Invalid template name" });
 		}
 
-		// Additional check for path traversal patterns
-		if (template.includes("..") || template.includes("/") || template.includes("\\")) {
-			return res.status(400).json({ message: "Invalid template name" });
-		}
-
 		const baseDir = resolve("./templates");
 		const safeName = sanitizeFilename(template);
 		const templatePath = resolve(baseDir, safeName);
@@ -140,7 +130,7 @@ router.get("/render-page", (req, res) => {
 		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
 			return res.status(400).json({ message: "Invalid template path" });
 		}
-		if (!templatePath.startsWith(baseDir + sep) && templatePath !== baseDir) {
+		if (!templatePath.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid template path" });
 		}
 
@@ -203,7 +193,7 @@ router.post("/upload-file", (req, res) => {
 			return res.status(400).json({ message: "Invalid upload path" });
 		}
 
-		// Filename is already validated with filePattern, but double-check for path separators
+		// Validate filename doesn't contain path separators before resolving
 		if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
 			return res.status(400).json({ message: "Invalid filename" });
 		}
@@ -262,11 +252,6 @@ router.get("/export-csv", (req, res) => {
 			return res.status(400).json({ message: "Invalid data file name" });
 		}
 
-		// Additional check for path traversal patterns
-		if (dataFile.includes("..") || dataFile.includes("/") || dataFile.includes("\\")) {
-			return res.status(400).json({ message: "Invalid data file name" });
-		}
-
 		const baseDir = resolve("./data");
 		const safeName = sanitizeFilename(dataFile);
 		const csvPath = resolve(baseDir, safeName);
@@ -274,7 +259,7 @@ router.get("/export-csv", (req, res) => {
 		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
 			return res.status(400).json({ message: "Invalid data file path" });
 		}
-		if (!csvPath.startsWith(baseDir + sep) && csvPath !== baseDir) {
+		if (!csvPath.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid data file path" });
 		}
 
@@ -316,7 +301,7 @@ router.get("/browse-files", (req, res) => {
 			return res.status(400).json({ message: "Invalid directory name" });
 		}
 
-		// Additional check for path traversal patterns
+		// Validate directory doesn't contain path traversal before resolving
 		if (directory.includes("..") || directory.startsWith("/") || directory.includes(":\\") || directory.includes(":")) {
 			return res.status(400).json({ message: "Invalid directory path" });
 		}
@@ -339,7 +324,19 @@ router.get("/browse-files", (req, res) => {
 			const files = readdirSync(dirPath);
 
 			const fileList = files.map(file => {
+				// Validate file name doesn't contain path traversal
+				if (file.includes("..") || file.includes(sep)) {
+					return null;
+				}
+
 				const filePath = join(dirPath, file);
+				
+				// Ensure the resolved path is still within baseDir
+				const relativeFile = pathRelative(baseDir, filePath);
+				if (relativeFile.startsWith("..") || relativeFile.includes(`..${sep}`)) {
+					return null;
+				}
+
 				const stats = statSync(filePath);
 
 				return {
@@ -348,7 +345,7 @@ router.get("/browse-files", (req, res) => {
 					isDirectory: stats.isDirectory(),
 					modified: stats.mtime
 				};
-			});
+			}).filter(file => file !== null);
 
 			return res.json({ success: true, files: fileList });
 		}
@@ -379,11 +376,6 @@ router.get("/config/load", (req, res) => {
 			return res.status(400).json({ message: "Invalid config file name" });
 		}
 
-		// Additional check for path traversal patterns before resolving
-		if (configFile.includes("..") || configFile.includes("/") || configFile.includes("\\")) {
-			return res.status(400).json({ message: "Invalid config file name" });
-		}
-
 		const baseDir = resolve("./config");
 		const safeName = sanitizeFilename(configFile);
 		const configPath = resolve(baseDir, safeName);
@@ -393,7 +385,7 @@ router.get("/config/load", (req, res) => {
 		}
 
 		// Prevent path traversal by ensuring the resolved path stays under baseDir
-		if (!configPath.startsWith(baseDir + sep) && configPath !== baseDir) {
+		if (!configPath.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid config file path" });
 		}
 
