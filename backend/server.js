@@ -1,3 +1,4 @@
+
 import "dotenv/config";
 
 import path from "node:path";
@@ -29,34 +30,11 @@ init();
 const app = express();
 const server = http.Server(app);
 
-app.disable("x-powered-by");
-
 app.use(Sentry.Handlers.requestHandler());
 
 app.use(helmet({
 	crossOriginResourcePolicy: false,
-	contentSecurityPolicy: {
-		directives: {
-			defaultSrc: ["'self'", "*"],
-			scriptSrc: ["'self'", "'unsafe-inline'", "*"],
-			styleSrc: ["'self'", "'unsafe-inline'", "*"],
-			imgSrc: ["'self'", "*", "data:", "blob:"],
-			connectSrc: ["'self'", "*"],
-			frameAncestors: ["'self'"],
-			objectSrc: ["'none'"],
-			baseSrc: ["'self'"],
-			formAction: ["'self'"],
-		},
-	},
-	frameguard: { action: "deny" },
-	noSniff: true,
-	referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-	hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
-app.use((req, res, next) => {
-	res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
-	next();
-});
 app.use(setServerTimeout(2 * 60 * 1000));
 if (NODE_ENV === "development") app.use(morgan("dev", { skip: (req) => req.method === "OPTIONS" }));
 app.use(cors({ credentials: true, origin: true }));
@@ -66,13 +44,16 @@ app.use((req, _, next) => { req.body ||= {}; next(); });
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(favicon(path.join(path.dirname(fileURLToPath(import.meta.url)), "src", "assets", "images", "favicon.ico")));
 
+// Block actuator endpoints to fix Spring Actuator Information Leak vulnerability
+app.use(/^\/actuator/, (_, res) => res.status(404).json({ message: "Not found" }));
+
 app.use("/api", routes);
 app.all("/*", (_, res) => res.json({ body: "It works!" }));
 
 app.use(Sentry.Handlers.errorHandler());
 
 if (NODE_ENV !== "test") {
-	var port = PORT || 4000;
+	const port = PORT || 4000;
 	server.listen(port, () => console.log(chalk.bold.cyan(`>>> Live at http://localhost:${port}`)));
 }
 
