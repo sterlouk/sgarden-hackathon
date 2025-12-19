@@ -260,8 +260,8 @@ router.post("/compress-files", (req, res) => {
 
 		const baseDir = resolve("./files");
 		const targetZip = resolve(baseDir, `${outputName}.zip`);
-		const relativeZip = pathRelative(baseDir, targetZip);
-		if (relativeZip.startsWith("..") || relativeZip.includes(`..${sep}`)) {
+		// Check that targetZip is within baseDir
+		if (!targetZip.startsWith(baseDir + sep) && targetZip !== baseDir) {
 			return res.status(400).json({ message: "Invalid path" });
 		}
 		if (!targetZip.startsWith(baseDir + sep)) {
