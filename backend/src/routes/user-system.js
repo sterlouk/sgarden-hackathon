@@ -237,14 +237,14 @@ router.post("/system/spawn", (req, res) => {
 
 router.post("/compress-files", (req, res) => {
 	try {
-		const { filename, outputName } = req.body;
+		const { outputName } = req.body;
 		
-		if (!filename || !outputName) {
-			return res.status(400).json({ message: "Filename and output name required" });
+		if (!outputName) {
+			return res.status(400).json({ message: "Output name required" });
 		}
 
 		const namePattern = /^[A-Za-z0-9_.-]{1,100}$/;
-		if (!namePattern.test(filename) || !namePattern.test(outputName)) {
+		if (!namePattern.test(outputName)) {
 			return res.status(400).json({ message: "Invalid file name" });
 		}
 
