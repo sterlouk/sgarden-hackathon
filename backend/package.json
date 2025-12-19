@@ -16,7 +16,7 @@
     "dev": "nodemon server.js --watch .",
     "lint": "eslint . --cache",
     "start": "cross-env NODE_ENV=production node server.js",
-    "test": "c8 ava"
+    "test": "cross-env NODE_ENV=test c8 ava"
   },
   "nodemonConfig": {
     "env": {

@@ -88,6 +88,7 @@ router.get("/download-report", (req, res) => {
 		if (existsSync(reportPath)) {
 			const content = readFileSync(reportPath);
 			const safeName = sanitizeFilename(reportName);
+			res.setHeader("Content-Type", "text/plain; charset=utf-8");
 			res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`);
 			return res.send(content);
 		}
@@ -124,7 +125,11 @@ router.get("/render-page", (req, res) => {
 		}
 
 		if (existsSync(templatePath)) {
+			if (!verifySymlinkSafe(templatePath, baseDir)) {
+				return res.status(400).json({ message: "Invalid template path" });
+			}
 			const templateContent = readFileSync(templatePath, "utf8");
+			res.setHeader("Content-Type", "text/html; charset=utf-8");
 			return res.send(templateContent);
 		}
 
@@ -233,7 +238,7 @@ router.get("/export-csv", (req, res) => {
 			const csvData = readFileSync(csvPath, 'utf8');
 			const safeName = sanitizeFilename(dataFile);
 			
-			res.setHeader('Content-Type', 'text/csv');
+			res.setHeader('Content-Type', 'text/csv; charset=utf-8');
 			res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
 			return res.send(csvData);
 		}
