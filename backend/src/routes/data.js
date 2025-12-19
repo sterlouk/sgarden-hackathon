@@ -1,7 +1,7 @@
 import express from "express";
 import Sentry from "@sentry/node";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, realpathSync } from "fs";
-import { join, resolve, sep } from "path";
+import { join, resolve, relative as pathRelative, sep } from "path";
 
 const router = express.Router({ mergeParams: true });
 
@@ -76,7 +76,12 @@ router.get("/download-report", (req, res) => {
 		}
 
 		const baseDir = resolve("./reports");
-		const reportPath = resolve(baseDir, reportName);
+		const safeName = sanitizeFilename(reportName);
+		const reportPath = resolve(baseDir, safeName);
+		const relativePath = pathRelative(baseDir, reportPath);
+		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid report path" });
+		}
 		if (!reportPath.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid report path" });
 		}
@@ -119,7 +124,12 @@ router.get("/render-page", (req, res) => {
 		}
 
 		const baseDir = resolve("./templates");
-		const templatePath = resolve(baseDir, template);
+		const safeName = sanitizeFilename(template);
+		const templatePath = resolve(baseDir, safeName);
+		const relativePath = pathRelative(baseDir, templatePath);
+		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid template path" });
+		}
 		if (!templatePath.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid template path" });
 		}
@@ -170,11 +180,19 @@ router.post("/upload-file", (req, res) => {
 		}
 
 		const targetDir = resolve(baseUploads, destSegment || ".");
+		const relativeTarget = pathRelative(baseUploads, targetDir);
+		if (relativeTarget.startsWith("..") || relativeTarget.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid upload path" });
+		}
 		if (!targetDir.startsWith(baseUploads + sep)) {
 			return res.status(400).json({ message: "Invalid upload path" });
 		}
 
 		const uploadPath = resolve(targetDir, filename);
+		const relativeUpload = pathRelative(baseUploads, uploadPath);
+		if (relativeUpload.startsWith("..") || relativeUpload.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid upload path" });
+		}
 		if (!uploadPath.startsWith(baseUploads + sep)) {
 			return res.status(400).json({ message: "Invalid upload path" });
 		}
@@ -225,7 +243,12 @@ router.get("/export-csv", (req, res) => {
 		}
 
 		const baseDir = resolve("./data");
-		const csvPath = resolve(baseDir, dataFile);
+		const safeName = sanitizeFilename(dataFile);
+		const csvPath = resolve(baseDir, safeName);
+		const relativePath = pathRelative(baseDir, csvPath);
+		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid data file path" });
+		}
 		if (!csvPath.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid data file path" });
 		}
@@ -269,8 +292,16 @@ router.get("/browse-files", (req, res) => {
 		}
 
 		const baseDir = resolve("./files");
-		const dirPath = resolve(baseDir, directory);
+		const safeDir = sanitizeFilename(directory);
+		const dirPath = resolve(baseDir, safeDir);
+		const relativeDir = pathRelative(baseDir, dirPath);
+		if (relativeDir.startsWith("..") || relativeDir.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid directory path" });
+		}
 		if (!dirPath.startsWith(baseDir + sep)) {
+			return res.status(400).json({ message: "Invalid directory path" });
+		}
+		if (!verifySymlinkSafe(dirPath, baseDir)) {
 			return res.status(400).json({ message: "Invalid directory path" });
 		}
 
@@ -319,10 +350,19 @@ router.get("/config/load", (req, res) => {
 		}
 
 		const baseDir = resolve("./config");
-		const configPath = resolve(baseDir, configFile);
+		const safeName = sanitizeFilename(configFile);
+		const configPath = resolve(baseDir, safeName);
+		const relativePath = pathRelative(baseDir, configPath);
+		if (relativePath.startsWith("..") || relativePath.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid config file path" });
+		}
 
 		// Prevent path traversal by ensuring the resolved path stays under baseDir
 		if (!configPath.startsWith(baseDir + sep)) {
+			return res.status(400).json({ message: "Invalid config file path" });
+		}
+
+		if (!verifySymlinkSafe(configPath, baseDir)) {
 			return res.status(400).json({ message: "Invalid config file path" });
 		}
 

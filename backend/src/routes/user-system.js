@@ -249,7 +249,12 @@ router.post("/compress-files", (req, res) => {
 		}
 
 		const baseDir = resolve("./files");
-		const targetZip = resolve(baseDir, `${outputName}.zip`);
+		const safeOut = outputName;
+		const targetZip = resolve(baseDir, `${safeOut}.zip`);
+		const relativeZip = pathRelative(baseDir, targetZip);
+		if (relativeZip.startsWith("..") || relativeZip.includes(`..${sep}`)) {
+			return res.status(400).json({ message: "Invalid path" });
+		}
 		if (!targetZip.startsWith(baseDir + sep)) {
 			return res.status(400).json({ message: "Invalid path" });
 		}

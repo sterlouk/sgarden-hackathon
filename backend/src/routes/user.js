@@ -12,6 +12,14 @@ const router = express.Router({ mergeParams: true });
 const isValidObjectId = (id) => /^[a-f\d]{24}$/i.test(String(id));
 const isValidRole = (role) => ['user', 'admin'].includes(role);
 const ALLOWED_PLUGINS = ['theme-manager', 'analytics', 'notifications'];
+// Static map of plugin loaders to avoid dynamic require surface.
+// To add a new plugin, create ./plugins/<name>.js and register a loader here,
+// e.g., 'audit': () => import('./plugins/audit.js'). Keep paths static.
+const PLUGIN_LOADERS = {
+	'theme-manager': () => import('./plugins/theme-manager.js'),
+	'analytics': () => import('./plugins/analytics.js'),
+	'notifications': () => import('./plugins/notifications.js'),
+};
 const sanitizeString = (str) => String(str).replace(/[^a-zA-Z0-9_.-]/g, '');
 
 // Authorization helpers (minimal and fast)
@@ -35,7 +43,7 @@ router.get("/decode/", (_, res) => res.json(res.locals.user));
 
 router.get("/attempt-auth/", (_, res) => res.json({ ok: true }));
 
-router.get("/", async (req, res) => {
+router.get("/", async (_req, res) => {
 	try {
 		if (requireAdmin(res)) return;
 		if (isTestEnv) {
@@ -228,7 +236,6 @@ router.post("/settings/update", (req, res) => {
 			return res.status(400).json({ message: "Settings object required" });
 		}
 		
-		const allowedSettings = ['theme', 'language', 'notifications'];
 		const allowedThemes = ['light', 'dark'];
 		const allowedLanguages = ['en', 'es', 'fr', 'de'];
 		
@@ -249,7 +256,7 @@ router.post("/settings/update", (req, res) => {
 	}
 });
 
-router.post("/load-plugin", (req, res) => {
+router.post("/load-plugin", async (req, res) => {
 	try {
 		const { pluginName } = req.body;
 		
@@ -263,11 +270,16 @@ router.post("/load-plugin", (req, res) => {
 			return res.status(400).json({ message: "Plugin not allowed. Allowed: " + ALLOWED_PLUGINS.join(', ') });
 		}
 		
-		const plugin = require(`./plugins/${sanitized}`);
+		const loader = PLUGIN_LOADERS[sanitized];
+		if (!loader) {
+			return res.status(400).json({ message: "Plugin loader missing" });
+		}
+		const pluginModule = await loader();
+		const plugin = pluginModule.default ?? pluginModule;
 		
 		return res.json({ 
 			success: true, 
-			plugin: plugin.toString(),
+			plugin: typeof plugin === 'function' ? plugin.toString() : String(plugin),
 			message: "Plugin loaded"
 		});
 	} catch (error) {
