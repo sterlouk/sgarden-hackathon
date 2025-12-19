@@ -17,7 +17,6 @@
 	"scripts": {
 		"build": "craco build",
 		"lint": "eslint . --cache",
-		"serve": "node serve.js",
 		"start": "craco start",
 		"test": "npm run lint",
 		"cypress:open": "cypress open",
