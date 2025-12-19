@@ -53,7 +53,7 @@ app.use(helmet({
 	referrerPolicy: { policy: "strict-origin-when-cross-origin" },
 	hsts: { maxAge: 31536000, includeSubDomains: true },
 }));
-app.use((req, res, next) => {
+app.use((_, res, next) => {
 	res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
 	next();
 });
