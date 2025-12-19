@@ -6,6 +6,7 @@ import { join, resolve, sep } from "path";
 const router = express.Router({ mergeParams: true });
 
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
+const baseUploads = resolve("./uploads");
 
 const sanitizeFilename = (filename) => filename.replace(/[\r\n]/g, "");
 
