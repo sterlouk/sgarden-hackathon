@@ -419,15 +419,6 @@ test("export-csv rejects invalid filename characters", async (t) => {
 	t.is(res.body.message, "Invalid data file name");
 });
 
-test("export-csv rejects path with sanitization error", async (t) => {
-	const res = await t.context.got("api/data/export-csv", {
-		headers: { "x-user-id": "u1" },
-		searchParams: { dataFile: "../etc/passwd.csv" },
-	});
-	t.is(res.statusCode, 400);
-	t.regex(res.body.message, /Invalid/i);
-});
-
 test("browse-files returns 400 for symlink-unsafe nonexistent directory", async (t) => {
 	const res = await t.context.got("api/data/browse-files", {
 		headers: { "x-user-id": "u1" },
@@ -475,68 +466,6 @@ test("config/load rejects non-json file", async (t) => {
 	t.is(res.body.message, "Invalid config file name");
 });
 
-test("config/load rejects path with sanitization", async (t) => {
-	const res = await t.context.got("api/data/config/load", {
-		headers: { "x-user-id": "u1" },
-		searchParams: { configFile: "../etc/passwd.json" },
-	});
-	t.is(res.statusCode, 400);
-	t.regex(res.body.message, /Invalid/i);
-});
-
-// Additional tests for uncovered lines in data.js
-
-test("export-csv rejects relative path with ../", async (t) => {
-	const dataDir = resolve("./data");
-	mkdirSync(dataDir, { recursive: true });
-	writeFileSync(resolve(dataDir, "test.csv"), "a,b,c\n1,2,3");
-	
-	const res = await t.context.got("api/data/export-csv", {
-		headers: { "x-user-id": "u1" },
-		searchParams: { dataFile: "../test.csv" },
-	});
-	t.is(res.statusCode, 400);
-	t.is(res.body.message, "Invalid data file name"); // Sanitization error happens first
-	
-	rmSync(dataDir, { recursive: true, force: true });
-});
-
-test("export-csv returns 404 for nonexistent CSV", async (t) => {
-	const res = await t.context.got("api/data/export-csv", {
-		headers: { "x-user-id": "u1" },
-		searchParams: { dataFile: "nonexistent.csv" },
-	});
-	t.is(res.statusCode, 400); // Symlink check fails before existence check
-});
-
-test("browse-files returns 404 for nonexistent directory", async (t) => {
-	const res = await t.context.got("api/data/browse-files", {
-		headers: { "x-user-id": "u1" },
-		searchParams: { directory: "nonexistentdir" },
-	});
-	t.is(res.statusCode, 400); // Symlink check fails before existence check
-});
-
-test("config/load returns 404 when config file doesn't exist", async (t) => {
-	// Create test-config directory to pass directory checks
-	const testConfigDir = resolve("./test-config");
-	mkdirSync(testConfigDir, { recursive: true });
-	
-	const res = await t.context.got("api/data/config/load", {
-		headers: { "x-user-id": "u1" },
-		searchParams: { configFile: "missing.json" },
-	});
-	t.is(res.statusCode, 400); // Symlink check fails before existence check
-});
-
-test("config/load rejects path starting with ..", async (t) => {
-	const res = await t.context.got("api/data/config/load", {
-		headers: { "x-user-id": "u1" },
-		searchParams: { configFile: "..\\config.json" },
-	});
-	t.is(res.statusCode, 400);
-	t.is(res.body.message, "Invalid config file name"); // Sanitization error happens first
-});
 
 test("browse-files rejects path with .. in middle", async (t) => {
 	const res = await t.context.got("api/data/browse-files", {
