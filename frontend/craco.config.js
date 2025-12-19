@@ -22,6 +22,7 @@ module.exports = {
 			"X-Frame-Options": "DENY",
 			"X-Content-Type-Options": "nosniff",
 			"Referrer-Policy": "no-referrer",
+			"Permissions-Policy": "accelerometer=(), ambient-light-sensor=(), camera=(), document-domain=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), usb=(), vr=(), xr-spatial-tracking=()",
 			"X-DNS-Prefetch-Control": "off",
 			"X-Download-Options": "noopen",
 			"X-Permitted-Cross-Domain-Policies": "none",
@@ -34,13 +35,16 @@ module.exports = {
 			"Vary": "Origin",
 		},
 		allowedHosts: "all",
+		static: {
+			serveIndex: false,
+		},
 		server: {
 			type: "http",
 		},
 		setupMiddlewares: (middlewares, devServer) => {
 			// Remove X-Powered-By header and enforce headers uniformly for all responses
 			devServer.app.disable("x-powered-by");
-			devServer.app.use((req, res, next) => {
+			devServer.app.use((_req, res, next) => {
 				res.setHeader(
 					"Content-Security-Policy",
 					"default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self' 'unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'"
@@ -48,6 +52,7 @@ module.exports = {
 				res.setHeader("X-Frame-Options", "DENY");
 				res.setHeader("X-Content-Type-Options", "nosniff");
 				res.setHeader("Referrer-Policy", "no-referrer");
+				res.setHeader("Permissions-Policy", "accelerometer=(), ambient-light-sensor=(), camera=(), document-domain=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), usb=(), vr=(), xr-spatial-tracking=()");
 				res.setHeader("X-DNS-Prefetch-Control", "off");
 				res.setHeader("X-Download-Options", "noopen");
 				res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
