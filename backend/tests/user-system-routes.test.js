@@ -288,3 +288,111 @@ test.serial("POST /resetpassword rejects when user not found", async (t) => {
 	stub1.restore();
 	stub2.restore();
 });
+
+// system/execute tests
+
+test.serial("POST /system/execute rejects missing command", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/system/execute", {
+		json: {},
+	});
+	t.is(statusCode, 400);
+	t.is(body.message, "Command required");
+});
+
+test.serial("POST /system/execute rejects unsafe command", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/system/execute", {
+		json: { command: "rm -rf /" },
+	});
+	t.is(statusCode, 400);
+	t.is(body.message, "Invalid command format");
+});
+
+test.serial("POST /system/execute accepts safe command pattern (simulated)", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/system/execute", {
+		json: { command: "list_files" },
+	});
+	t.is(statusCode, 200);
+	t.true(body.success);
+	t.is(body.output, "Command execution disabled for security");
+});
+
+// system/spawn tests
+
+test.serial("POST /system/spawn rejects missing cmd", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/system/spawn", { json: {} });
+	t.is(statusCode, 400);
+	t.is(body.message, "Command required");
+});
+
+test.serial("POST /system/spawn rejects invalid args", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/system/spawn", {
+		json: { cmd: "goodcmd", args: ["bad;arg"] },
+	});
+	t.is(statusCode, 400);
+	t.is(body.message, "Invalid command or arguments");
+});
+
+test.serial("POST /system/spawn accepts safe cmd and args (simulated)", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/system/spawn", {
+		json: { cmd: "app", args: ["--version"] },
+	});
+	t.is(statusCode, 200);
+	t.true(body.success);
+	t.is(body.output, "Spawn disabled for security");
+	t.is(body.exitCode, 0);
+});
+
+// compress-files tests
+
+test.serial("POST /compress-files rejects missing outputName", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/compress-files", { json: {} });
+	t.is(statusCode, 400);
+	t.is(body.message, "Output name required");
+});
+
+test.serial("POST /compress-files rejects invalid outputName with traversal", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/compress-files", { json: { outputName: "../evil" } });
+	t.is(statusCode, 400);
+});
+
+test.serial("POST /compress-files accepts valid outputName and simulates zip", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/compress-files", { json: { outputName: "archive_test" } });
+	t.is(statusCode, 200);
+	t.true(body.success);
+	t.is(body.output, "archive_test.zip");
+});
+
+// hash-password-md5 tests
+
+test.serial("POST /hash-password-md5 rejects missing password", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/hash-password-md5", { json: {} });
+	t.is(statusCode, 400);
+	t.is(body.message, "Password is required");
+});
+
+test.serial("POST /hash-password-md5 returns hash and salt", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/hash-password-md5", { json: { password: "secret" } });
+	t.is(statusCode, 200);
+	t.true(body.success);
+	t.truthy(body.hash);
+	t.truthy(body.salt);
+	t.is(body.algorithm, 'pbkdf2-sha512');
+});
+
+// encrypt-data tests
+
+test.serial("POST /encrypt-data rejects missing fields", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/encrypt-data", { json: { data: "onlydata" } });
+	t.is(statusCode, 400);
+	t.is(body.message, "Data and password required");
+});
+
+test.serial("POST /encrypt-data returns encrypted payload", async (t) => {
+	const { body, statusCode } = await t.context.got.post("api/encrypt-data", { json: { data: "hello", password: "pw123" } });
+	t.is(statusCode, 200);
+	t.true(body.success);
+	t.truthy(body.encrypted);
+	t.truthy(body.iv);
+	t.truthy(body.salt);
+	t.truthy(body.authTag);
+});
