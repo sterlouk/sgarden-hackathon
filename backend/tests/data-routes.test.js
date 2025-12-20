@@ -388,7 +388,7 @@ test("upload-file rejects path traversal in destination", async (t) => {
 		json: { filename: "test.txt", content: "data", destination: "../etc" },
 	});
 	t.is(res.statusCode, 400);
-	t.regex(res.body.message, /Invalid destination path/i);
+	t.is(res.body.message, "Invalid upload path");
 });
 
 test("upload-file rejects path traversal in filename resolution", async (t) => {
@@ -397,7 +397,7 @@ test("upload-file rejects path traversal in filename resolution", async (t) => {
 		json: { filename: "test.txt", content: "data", destination: "user/../../etc" },
 	});
 	t.is(res.statusCode, 400);
-	t.regex(res.body.message, /Invalid destination path/i);
+	t.is(res.body.message, "Invalid upload path");
 });
 
 test("export-csv returns 400 for symlink-unsafe nonexistent file", async (t) => {
