@@ -44,7 +44,7 @@ module.exports = {
 		setupMiddlewares: (middlewares, devServer) => {
 			// Remove X-Powered-By header and enforce headers uniformly for all responses
 			devServer.app.disable("x-powered-by");
-			devServer.app.use((_req, res, next) => {
+			devServer.app.use((_, res, next) => {
 				res.setHeader(
 					"Content-Security-Policy",
 					"default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self' 'unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'"
