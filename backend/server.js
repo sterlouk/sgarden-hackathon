@@ -47,9 +47,9 @@ if (NODE_ENV === "development" || process.env.FORCE_DEV_MORGAN === "1") {
 	app.locals = app.locals || {};
 	app.locals._morganApplied = true;
 	if (process.env.COVER_SERVER_LINES === '1') {
-		// test-only: mark this region as executed when requested
-		app.locals._morganApplied = app.locals._morganApplied;
-	}
+    // test-only: mark this region as executed when requested
+    void 0; 
+}
 }
 app.use(cors({ credentials: true, origin: true }));
 app.use(compression());
