@@ -10,6 +10,7 @@ const baseUploads = resolve("./uploads");
 const baseReports = resolve("./reports");
 const baseTemplates = resolve("./templates");
 const baseFiles = resolve("./files");
+const baseData = resolve("./data");
 const baseConfig = resolve("./config");
 
 /**
