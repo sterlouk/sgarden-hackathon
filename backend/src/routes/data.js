@@ -1,7 +1,7 @@
 import express from "express";
 import Sentry from "@sentry/node";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, realpathSync } from "fs";
-import { join, resolve, relative as pathRelative, sep, normalize } from "path";
+import { join, resolve, sep, normalize } from "path";
 
 const router = express.Router({ mergeParams: true });
 
@@ -9,7 +9,6 @@ const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
 const baseUploads = resolve("./uploads");
 const baseReports = resolve("./reports");
 const baseTemplates = resolve("./templates");
-const baseData = resolve("./data");
 const baseFiles = resolve("./files");
 const baseConfig = resolve("./config");
 
