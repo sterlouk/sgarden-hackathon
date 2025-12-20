@@ -1,7 +1,7 @@
 import express from "express";
 import Sentry from "@sentry/node";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, realpathSync } from "fs";
-import { join, resolve, relative as pathRelative, sep, normalize, isAbsolute, basename } from "path";
+import { join, resolve, relative as pathRelative, sep, normalize } from "path";
 
 const router = express.Router({ mergeParams: true });
 
@@ -15,46 +15,31 @@ const baseConfig = resolve("./config");
 
 /**
  * Utility to safely resolve a path and prevent traversal.
- * Uses STRICT VALIDATION (Rejecting bad input) rather than sanitization.
- * * @param {string} baseDir - The trusted root directory (Must be absolute).
- * @param {string} userInput - The untrusted path/filename.
+ * @param {string} baseDir - The trusted root directory.
+ * @param {string} userInput - The untrusted path/filename from the user.
  * @returns {string} - The fully resolved safe path.
  */
 const getSafePath = (baseDir, userInput) => {
     if (!userInput) throw new Error("Path is required");
 
-    // 1. Strict Validation: Reject directory traversal characters entirely.
-    // We do not try to clean '..', we simply reject the request.
-    if (userInput.includes("..")) {
-        throw new Error("Invalid path: Traversal characters detected");
-    }
+    // 1. Normalize and resolve the path
+    const resolvedBase = resolve(baseDir);
+    const safeInput = normalize(userInput).replace(/^(\.\.(\/|\\|$))+/, '');
+    const targetPath = resolve(resolvedBase, safeInput);
 
-    // 2. Strict Validation: Reject absolute paths.
-    // path.resolve('/var/www', '/etc/passwd') ignores the base and returns '/etc/passwd'.
-    // We must strictly block absolute paths.
-    if (isAbsolute(userInput) || userInput.startsWith("/") || userInput.startsWith("\\")) {
-        throw new Error("Invalid path: Absolute paths not allowed");
-    }
-
-    // 3. Resolve the path.
-    // Because we have rejected '..' and absolute paths, this operation is now safe.
-    const targetPath = resolve(baseDir, userInput);
-
-    // 4. Post-Resolution Check (Defense in Depth).
-    // Ensure the resulting path is strictly inside the trusted baseDir.
-    // We append 'sep' to avoid partial matches (e.g. /uploads-secret matching /uploads).
-    const rootWithSep = baseDir.endsWith(sep) ? baseDir : baseDir + sep;
+    // 2. Prefix validation (must stay within baseDir)
+    // We append the separator to prevent 'uploads-secret' from matching 'uploads'
+    const rootWithSep = resolvedBase.endsWith(sep) ? resolvedBase : resolvedBase + sep;
     
-    if (targetPath !== baseDir && !targetPath.startsWith(rootWithSep)) {
-        throw new Error("Security Violation: Path traversal attempt detected");
+    if (targetPath !== resolvedBase && !targetPath.startsWith(rootWithSep)) {
+        throw new Error("Directory traversal attempt detected");
     }
 
-    // 5. Symlink Protection (TOCTOU prevention).
-    // If the file exists, we check its real path on disk to ensure it's not a symlink to /etc/passwd.
+    // 3. Symlink protection: If path exists, ensure it doesn't point outside
     if (existsSync(targetPath)) {
         const realPath = realpathSync(targetPath);
-        if (realPath !== baseDir && !realPath.startsWith(rootWithSep)) {
-            throw new Error("Security Violation: Symlink traversal attempt detected");
+        if (realPath !== resolvedBase && !realPath.startsWith(rootWithSep)) {
+            throw new Error("Symlink traversal attempt detected");
         }
     }
 
@@ -103,11 +88,6 @@ router.get("/download-report", (req, res) => {
         if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
 
         const { reportName } = req.query;
-        // Validation: Reports should be simple filenames
-        if (reportName.includes("/") || reportName.includes("\\")) {
-             return res.status(400).json({ message: "Invalid report name" });
-        }
-
         const reportPath = getSafePath(baseReports, reportName);
 
         if (existsSync(reportPath) && statSync(reportPath).isFile()) {
@@ -127,11 +107,6 @@ router.get("/render-page", (req, res) => {
         if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
 
         const { template } = req.query;
-        // Validation: Templates should be simple filenames
-        if (template.includes("/") || template.includes("\\")) {
-             return res.status(400).json({ message: "Invalid template name" });
-        }
-
         const templatePath = getSafePath(baseTemplates, template);
 
         if (existsSync(templatePath) && statSync(templatePath).isFile()) {
@@ -152,26 +127,16 @@ router.post("/upload-file", (req, res) => {
         const { filename, content, destination } = req.body;
         if (!filename || content === undefined) return res.status(400).json({ message: "Filename and content required" });
 
-        // 1. Validate filename strictly (no paths allowed in filename)
-        if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
+        // 1. Prevent filenames from having path components
+        if (filename.includes("/") || filename.includes("\\")) {
             return res.status(400).json({ message: "Invalid filename" });
         }
 
-        // 2. Validate destination separately if provided
-        if (destination && (destination.includes("..") || isAbsolute(destination))) {
-             return res.status(400).json({ message: "Invalid destination path" });
-        }
+        // 2. Calculate safe directory and final path
+        const targetDir = getSafePath(baseUploads, destination || ".");
+        const uploadPath = getSafePath(targetDir, filename);
 
-        // 3. One-shot Resolution
-        // We join the destination and filename first, then resolve against the immutable baseUploads.
-        // This avoids creating a 'tainted' intermediate directory variable.
-        const relativePath = destination ? join(destination, filename) : filename;
-        const uploadPath = getSafePath(baseUploads, relativePath);
-
-        // 4. Calculate the target directory from the safe path
-        const targetDir = resolve(uploadPath, "..");
-
-        // 5. Size check
+        // 3. Size check
         const contentLength = Buffer.byteLength(String(content), 'utf8');
         if (contentLength > MAX_UPLOAD_SIZE) {
             return res.status(413).json({ message: "File too large" });
@@ -196,20 +161,10 @@ router.get("/browse-files", (req, res) => {
 
         if (existsSync(dirPath) && statSync(dirPath).isDirectory()) {
             const files = readdirSync(dirPath);
-            
             const fileList = files.map(file => {
-                // FIXED: Explicitly validate the loop variable 'file'.
-                // We assert that 'file' is a simple filename with no path separators.
-                // This satisfies static analysis tools that 'join(dirPath, file)' is safe.
-                if (file.includes(sep) || file.includes("..") || file.includes("/") || file.includes("\\")) {
-                    return null;
-                }
-
-                // Now 'file' is known to be a leaf node, safe to join.
                 const filePath = join(dirPath, file);
-                
-                // Redundant check, but useful for defense-in-depth against OS anomalies
-                if (!filePath.startsWith(dirPath)) return null;
+                // Secondary check: Ensure readdir didn't somehow escape (rare but good for defense-in-depth)
+                if (!resolve(filePath).startsWith(dirPath)) return null;
 
                 const stats = statSync(filePath);
                 return {
@@ -234,11 +189,6 @@ router.get("/config/load", (req, res) => {
 
         const { configFile } = req.query;
         if (!configFile?.endsWith('.json')) return res.status(400).json({ message: "Only JSON allowed" });
-        
-        // Validation: Config files should not have path separators
-        if (configFile.includes("/") || configFile.includes("\\")) {
-             return res.status(400).json({ message: "Invalid config name" });
-        }
 
         const configPath = getSafePath(baseConfig, configFile);
 
