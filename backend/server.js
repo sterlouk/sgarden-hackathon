@@ -69,7 +69,7 @@ app.use(Sentry.Handlers.errorHandler());
 // Allow tests to stub listen so they don't actually bind ports
 if (process.env.STUB_HTTP_LISTEN === "1") {
 	// replace listen with a no-op that sets a marker
-	server.listen = (port, cb) => {
+	server.listen = (_port, cb) => {
 		app.locals = app.locals || {};
 		app.locals._serverFileMarker = true;
 		if (typeof cb === 'function') cb();
@@ -80,7 +80,7 @@ if (process.env.STUB_HTTP_LISTEN === "1") {
 
 // Also support NOOP_LISTEN for older test names
 if (process.env.NOOP_LISTEN === "1") {
-	server.listen = (port, cb) => {
+	server.listen = (_port, cb) => {
 		app.locals = app.locals || {};
 		app.locals._serverFileMarker = true;
 		if (typeof cb === 'function') cb();
