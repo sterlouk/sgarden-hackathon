@@ -1,3 +1,8 @@
+const isProd = process.env.NODE_ENV === "production";
+
+const CSP_PROD = "default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'; style-src-elem 'self'";
+const CSP_DEV = "default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self' 'unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'";
+
 module.exports = {
 	webpack: {
 		configure: {
@@ -18,7 +23,7 @@ module.exports = {
 	devServer: {
 		port: 3002,
 		headers: {
-			"Content-Security-Policy": "default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self' 'unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'",
+			"Content-Security-Policy": isProd ? CSP_PROD : CSP_DEV,
 			"X-Frame-Options": "DENY",
 			"X-Content-Type-Options": "nosniff",
 			"Referrer-Policy": "no-referrer",
@@ -47,7 +52,7 @@ module.exports = {
 			devServer.app.use((_, res, next) => {
 				res.setHeader(
 					"Content-Security-Policy",
-					"default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self' 'unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'"
+					isProd ? CSP_PROD : CSP_DEV
 				);
 				res.setHeader("X-Frame-Options", "DENY");
 				res.setHeader("X-Content-Type-Options", "nosniff");
