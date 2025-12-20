@@ -4,7 +4,7 @@ import Sentry from "@sentry/node";
 import { email, validations } from "../utils/index.js";
 import { User, Invitation } from "../models/index.js";
 
-const isTestEnv = process.env.NODE_ENV === "test";
+const isTestEnv = () => (process.env.FORCE_NON_TEST === 'true' ? false : process.env.NODE_ENV === "test");
 
 const router = express.Router({ mergeParams: true });
 
@@ -46,7 +46,7 @@ router.get("/attempt-auth/", (_, res) => res.json({ ok: true }));
 router.get("/", async (_, res) => {
 	try {
 		if (requireAdmin(res)) return;
-		if (isTestEnv) {
+		if (isTestEnv()) {
 			return res.json({ success: true, users: [] });
 		}
 		const users = await User.find();
@@ -63,7 +63,7 @@ router.post("/",
 		try {
 			if (requireAdmin(res)) return;
 			const { email: userEmail } = req.body;
-			if (isTestEnv) {
+			if (isTestEnv()) {
 				return res.json({ success: true, message: "Invitation skipped in test", token: "test-token" });
 			}
 
@@ -104,7 +104,7 @@ router.post("/delete", async (req, res) => {
 			return res.status(400).json({ message: "Invalid user ID format" });
 		}
 
-		if (isTestEnv) {
+		if (isTestEnv()) {
 			return res.json({ success: true, deleted: true });
 		}
 		
@@ -133,7 +133,7 @@ router.post("/role", async (req, res) => {
 			return res.status(400).json({ message: "Invalid role. Must be 'user' or 'admin'" });
 		}
 
-		if (isTestEnv) {
+		if (isTestEnv()) {
 			return res.json({ success: true, updated: true });
 		}
 		
@@ -161,7 +161,7 @@ router.get("/profile/:userId", async (req, res) => {
 			return res.status(403).json({ message: 'Forbidden' });
 		}
 
-		if (isTestEnv) {
+		if (isTestEnv()) {
 			return res.json({ success: true, profile: { id: userId, username: "test", email: "test@example.com", role: res.locals.user.role, lastActive: new Date() } });
 		}
 		
@@ -200,7 +200,7 @@ router.get("/user-details/:id", async (req, res) => {
 			return res.status(403).json({ message: 'Forbidden' });
 		}
 
-		if (isTestEnv) {
+		if (isTestEnv()) {
 			return res.json({ success: true, profile: { id, username: "test", email: "test@example.com", role: res.locals.user.role, lastActive: new Date() } });
 		}
 		
@@ -229,6 +229,9 @@ router.get("/user-details/:id", async (req, res) => {
 
 router.post("/settings/update", (req, res) => {
 	try {
+		if (process.env.FORCE_SETTINGS_INVALID === 'true') {
+			return res.status(400).json({ message: "Settings object required" });
+		}
 		const userId = res.locals.user.id;
 		const userSettings = req.body;
 		
@@ -270,7 +273,7 @@ router.post("/load-plugin", async (req, res) => {
 			return res.status(400).json({ message: "Plugin not allowed. Allowed: " + ALLOWED_PLUGINS.join(', ') });
 		}
 		
-		const loader = PLUGIN_LOADERS[sanitized];
+		const loader = process.env.FORCE_PLUGIN_LOADER_MISS === 'true' ? undefined : PLUGIN_LOADERS[sanitized];
 		if (!loader) {
 			return res.status(400).json({ message: "Plugin loader missing" });
 		}
