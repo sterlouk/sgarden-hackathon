@@ -18,7 +18,7 @@ module.exports = {
 	devServer: {
 		port: 3002,
 		headers: {
-			"Content-Security-Policy": "default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'; style-src-elem 'self'",
+			"Content-Security-Policy": "default-src 'self'; base-uri 'self'; block-all-mixed-content; connect-src 'self' http://localhost:4000; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self' 'unsafe-eval'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'",
 			"X-Frame-Options": "DENY",
 			"X-Content-Type-Options": "nosniff",
 			"Referrer-Policy": "no-referrer",
