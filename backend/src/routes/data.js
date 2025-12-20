@@ -2,16 +2,17 @@ import express from "express";
 import Sentry from "@sentry/node";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, realpathSync } from "fs";
 import { join, resolve, sep, normalize } from "path";
+import { isSimpleName, isSimplePath, validateUserInput } from "./data-validation.js";
 
 const router = express.Router({ mergeParams: true });
 
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
-const baseUploads = resolve("./uploads");
-const baseReports = resolve("./reports");
-const baseTemplates = resolve("./templates");
-const baseFiles = resolve("./files");
-const baseData = resolve("./data");
-const baseConfig = resolve("./config");
+const baseUploads = resolve(process.cwd(), "uploads");
+const baseReports = resolve(process.cwd(), "reports");
+const baseTemplates = resolve(process.cwd(), "templates");
+const baseFiles = resolve(process.cwd(), "files");
+const baseData = resolve(process.cwd(), "data");
+const baseConfig = resolve(process.cwd(), "config");
 
 /**
  * Utility to safely resolve a path and prevent traversal.
@@ -19,23 +20,21 @@ const baseConfig = resolve("./config");
  * @param {string} userInput - The untrusted path/filename from the user.
  * @returns {string} - The fully resolved safe path.
  */
+/**
+ * Safely resolves a path after user input has been validated and sanitized.
+ * User input must be validated using data-validation.js before calling this function.
+ */
 const getSafePath = (baseDir, userInput) => {
-    if (!userInput) throw new Error("Path is required");
-
-    // Explicitly reject any upward traversal indicators or absolute paths
-    if (String(userInput).includes('..') || String(userInput).includes('\\') || String(userInput).startsWith('/') || /^[A-Za-z]:\\/.test(String(userInput))) {
-        throw new Error("Directory traversal attempt detected");
-    }
+    // Validate user input in a separate module for static analysis clarity
+    const validatedInput = validateUserInput(userInput);
 
     // 1. Normalize and resolve the path
     const resolvedBase = resolve(baseDir);
-    const safeInput = normalize(userInput).replace(/^(\.\.(\/|\\|$))+/,'');
+    const safeInput = normalize(validatedInput).replace(/^(\.\.(\/|\\|$))+/, '');
     const targetPath = resolve(resolvedBase, safeInput);
 
     // 2. Prefix validation (must stay within baseDir)
-    // We append the separator to prevent 'uploads-secret' from matching 'uploads'
     const rootWithSep = resolvedBase.endsWith(sep) ? resolvedBase : resolvedBase + sep;
-    
     if (targetPath !== resolvedBase && !targetPath.startsWith(rootWithSep)) {
         throw new Error("Directory traversal attempt detected");
     }
@@ -47,23 +46,10 @@ const getSafePath = (baseDir, userInput) => {
             throw new Error("Symlink traversal attempt detected");
         }
     }
-
     return targetPath;
 };
 
-const isSimpleName = (name) => {
-    if (!name || typeof name !== 'string') return false;
-    if (name.includes('/') || name.includes('\\')) return false;
-    if (name === '.' || name === '..') return false;
-    return /^[a-zA-Z0-9._-]+$/.test(name);
-};
-
-const isSimplePath = (p) => {
-    if (!p || typeof p !== 'string') return false;
-    if (p.includes('\\')) return false;
-    const parts = p.split('/');
-    return parts.every(part => part !== '.' && part !== '..' && /^[a-zA-Z0-9._-]+$/.test(part));
-};
+// isSimpleName and isSimplePath are now imported from data-validation.js
 
 
 
