@@ -1,297 +1,236 @@
 import express from "express";
 import Sentry from "@sentry/node";
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, realpathSync } from "fs";
-import { join, sep, normalize, resolve } from "path";
-import { isSimpleName, isSimplePath, validateUserInput } from "./data-validation.js";
-
-
-const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10 MB
+import {
+    readFileSync,
+    writeFileSync,
+    existsSync,
+    readdirSync,
+    statSync,
+    mkdirSync,
+    realpathSync
+} from "fs";
+import { join, resolve, sep } from "path";
+import { isSimpleName, isSimplePath } from "./data-validation.js";
 
 const router = express.Router({ mergeParams: true });
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
 
-// Centralized path resolver: only place where path.resolve is called
-const baseUploads = resolve(process.cwd(), "uploads");
-const baseReports = resolve(process.cwd(), "reports");
-const baseTemplates = resolve(process.cwd(), "templates");
-const baseFiles = resolve(process.cwd(), "files");
-const baseData = resolve(process.cwd(), "data");
-const baseConfig = resolve(process.cwd(), "config");
-
-/**
- * Safely resolves a path after user input has been validated and sanitized.
- * User input must be validated using data-validation.js before calling this function.
- */
-const getSafePath = (baseDir, userInput) => {
-    // Validate user input in a separate module for static analysis clarity
-    const validatedInput = validateUserInput(userInput);
-
-    // 1. Normalize and resolve the path
-    const resolvedBase = resolve(baseDir);
-    const safeInput = normalize(validatedInput).replace(/^(\.\.(\/|\\|$))+/, '');
-    const targetPath = resolve(resolvedBase, safeInput);
-
-    // 2. Prefix validation (must stay within baseDir)
-    const rootWithSep = resolvedBase.endsWith(sep) ? resolvedBase : resolvedBase + sep;
-    if (targetPath !== resolvedBase && !targetPath.startsWith(rootWithSep)) {
-        throw new Error("Directory traversal attempt detected");
-    }
-
-    // 3. Symlink protection: If path exists, ensure it doesn't point outside
-    if (existsSync(targetPath)) {
-        const realPath = realpathSync(targetPath);
-        if (realPath !== resolvedBase && !realPath.startsWith(rootWithSep)) {
-            throw new Error("Symlink traversal attempt detected");
-        }
-    }
-    return targetPath;
+// ---- Fixed base directories (resolved once) ----
+const BASE = {
+    uploads: resolve(process.cwd(), "uploads"),
+    reports: resolve(process.cwd(), "reports"),
+    templates: resolve(process.cwd(), "templates"),
+    files: resolve(process.cwd(), "files"),
+    data: resolve(process.cwd(), "data"),
+    config: resolve(process.cwd(), "config"),
 };
 
-// isSimpleName and isSimplePath are now imported from data-validation.js
+// ---- Single safe resolver ----
+const getSafePath = (baseDir, userInput = ".") => {
+    if (userInput !== "." && !isSimpleName(userInput) && !isSimplePath(userInput)) {
+        throw new Error("Invalid path input");
+    }
 
+    const baseWithSep = baseDir.endsWith(sep) ? baseDir : baseDir + sep;
+    const target = resolve(baseDir, userInput);
 
+    if (target !== baseDir && !target.startsWith(baseWithSep)) {
+        throw new Error("Directory traversal detected");
+    }
 
-const generateRandomData = (min = 0, max = 10) => Math.random() * (max - min) + min;
+    if (existsSync(target)) {
+        const real = realpathSync(target);
+        if (real !== baseDir && !real.startsWith(baseWithSep)) {
+            throw new Error("Symlink traversal detected");
+        }
+    }
 
-// --- Routes ---
+    return target;
+};
 
-router.get("/", async (_, res) => {
+// ---- Utilities ----
+const generateRandomData = (min = 0, max = 10) =>
+    Math.random() * (max - min) + min;
+
+// ---- Routes ----
+
+router.get("/", (_, res) => {
     try {
-        const localFoodCropProduction = {
-            March: Array.from({ length: 100 }, () => generateRandomData(0, 10)),
-            April: Array.from({ length: 100 }, () => generateRandomData(0, 10)),
-            May: Array.from({ length: 100 }, () => generateRandomData(0, 10)),
-        };
-
-        const comparisonOfIrrigationWaterVsNeeds = {
-            March: { etc: generateRandomData(0, 100), irrigation: generateRandomData(0, 100), rainfall: generateRandomData(0, 100) },
-            April: { etc: generateRandomData(0, 100), irrigation: generateRandomData(0, 100), rainfall: generateRandomData(0, 100) },
-            May: { etc: generateRandomData(0, 100), irrigation: generateRandomData(0, 100), rainfall: generateRandomData(0, 100) },
-            June: { etc: generateRandomData(0, 100), irrigation: generateRandomData(0, 100), rainfall: generateRandomData(0, 100) },
-            July: { etc: generateRandomData(0, 100), irrigation: generateRandomData(0, 100), rainfall: generateRandomData(0, 100) },
-            August: { etc: generateRandomData(0, 100), irrigation: generateRandomData(0, 100), rainfall: generateRandomData(0, 100) },
-        };
-
         return res.json({
             success: true,
-            localFoodCropProduction,
-            comparisonOfIrrigationWaterVsNeeds,
-            timePlot: {
-                meteo: Array.from({ length: 20 }, () => generateRandomData(0, 100)),
-                inSitu: Array.from({ length: 20 }, () => generateRandomData(0, 100)),
-                generated: Array.from({ length: 20 }, () => generateRandomData(0, 100)),
+            localFoodCropProduction: {
+                March: Array.from({ length: 100 }, () => generateRandomData()),
+                April: Array.from({ length: 100 }, () => generateRandomData()),
+                May: Array.from({ length: 100 }, () => generateRandomData()),
             },
         });
-    } catch (error) {
-        Sentry.captureException(error);
-        return res.status(500).json({ message: "Something went wrong." });
+    } catch (err) {
+        Sentry.captureException(err);
+        res.status(500).json({ message: "Something went wrong." });
     }
 });
 
+// ---- Download report ----
 router.get("/download-report", (req, res) => {
+    if (!res.locals?.user)
+        return res.status(401).json({ message: "Authentication required" });
+
+    const { reportName } = req.query;
+    if (!reportName)
+        return res.status(400).json({ message: "Report name required" });
+    if (!isSimpleName(reportName))
+        return res.status(400).json({ message: "Invalid report name" });
+
     try {
-        if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
-
-        const { reportName } = req.query;
-        if (!reportName) return res.status(400).json({ message: "Report name required" });
-        if (!isSimpleName(reportName)) return res.status(400).json({ message: "Invalid report name" });
-
-        let reportPath;
-        try {
-            reportPath = getSafePath(baseReports, reportName);
-        } catch (err) {
-            return res.status(400).json({ message: "Invalid report path" });
-        }
-
+        const reportPath = getSafePath(BASE.reports, reportName);
         if (existsSync(reportPath) && statSync(reportPath).isFile()) {
-            const content = readFileSync(reportPath);
             res.setHeader("Content-Type", "text/plain; charset=utf-8");
-            res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(reportName)}"`);
-            return res.send(content);
+            res.setHeader(
+                "Content-Disposition",
+                `attachment; filename="${encodeURIComponent(reportName)}"`
+            );
+            return res.send(readFileSync(reportPath));
         }
-        // Non-existent or otherwise unsafe -> report tests expect 400 here
         return res.status(400).json({ message: "Invalid report path" });
-    } catch (error) {
-        return res.status(400).json({ message: error.message || "Download failed" });
+    } catch {
+        return res.status(400).json({ message: "Invalid report path" });
     }
 });
 
+// ---- Render template ----
 router.get("/render-page", (req, res) => {
+    if (!res.locals?.user)
+        return res.status(401).json({ message: "Authentication required" });
+
+    const { template } = req.query;
+    if (!template)
+        return res.status(400).json({ message: "Template name required" });
+    if (!isSimpleName(template))
+        return res.status(400).json({ message: "Invalid template name" });
+
     try {
-        if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
-
-        const { template } = req.query;
-        if (!template) return res.status(400).json({ message: "Template name required" });
-        if (!isSimpleName(template)) return res.status(400).json({ message: "Invalid template name" });
-
-        let templatePath;
-        try {
-            templatePath = getSafePath(baseTemplates, template);
-        } catch (err) {
-            return res.status(400).json({ message: "Invalid template path" });
-        }
-
+        const templatePath = getSafePath(BASE.templates, template);
         if (existsSync(templatePath) && statSync(templatePath).isFile()) {
-            const templateContent = readFileSync(templatePath, "utf8");
             res.setHeader("Content-Type", "text/html; charset=utf-8");
-            return res.send(templateContent);
+            return res.send(readFileSync(templatePath, "utf8"));
         }
         return res.status(404).json({ message: "Template not found" });
-    } catch (error) {
+    } catch {
         return res.status(400).json({ message: "Invalid template path" });
     }
 });
 
+// ---- Upload file ----
 router.post("/upload-file", (req, res) => {
+    if (!res.locals?.user)
+        return res.status(401).json({ message: "Authentication required" });
+
+    const { filename, content, destination } = req.body;
+    if (!filename || content === undefined)
+        return res.status(400).json({ message: "Filename and content required" });
+
+    if (!isSimpleName(filename))
+        return res.status(400).json({ message: "Invalid filename" });
+
     try {
-        if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
+        const targetDir = getSafePath(BASE.uploads, destination || ".");
+        const uploadPath = getSafePath(targetDir, filename);
 
-        const { filename, content, destination } = req.body;
-        if (!filename || content === undefined) return res.status(400).json({ message: "Filename and content required" });
-
-        // 1. Prevent filenames from having path components
-        if (filename.includes("/") || filename.includes("\\")) {
-            return res.status(400).json({ message: "Invalid filename" });
-        }
-
-        // 1b. Validate destination characters; distinguish bad chars vs traversal
-        if (destination) {
-            if (String(destination).includes('..') || String(destination).includes('\\') || String(destination).startsWith('/') || /^[A-Za-z]:\\/.test(String(destination))) {
-                return res.status(400).json({ message: "Invalid upload path" });
-            }
-            if (!isSimplePath(destination)) {
-                return res.status(400).json({ message: "Invalid destination" });
-            }
-        }
-
-        // 2. Calculate safe directory and final path
-        let targetDir;
-        let uploadPath;
-        try {
-            targetDir = getSafePath(baseUploads, destination || ".");
-            uploadPath = getSafePath(targetDir, filename);
-        } catch (err) {
-            Sentry.captureException(err);
-            return res.status(400).json({ message: "Invalid upload path" });
-        }
-
-        // 3. Size check
-        const contentLength = Buffer.byteLength(String(content), 'utf8');
-        if (contentLength > MAX_UPLOAD_SIZE) {
+        if (Buffer.byteLength(String(content), "utf8") > MAX_UPLOAD_SIZE) {
             return res.status(413).json({ message: "File too large" });
         }
 
         mkdirSync(targetDir, { recursive: true });
         writeFileSync(uploadPath, content);
-        
-        return res.json({ success: true, message: "File uploaded successfully" });
-    } catch (error) {
-        Sentry.captureException(error);
-        return res.status(400).json({ message: error.message || "Upload failed" });
+
+        return res.json({ success: true });
+    } catch (err) {
+        Sentry.captureException(err);
+        return res.status(400).json({ message: "Invalid destination" });
     }
 });
 
+// ---- Browse files ----
 router.get("/browse-files", (req, res) => {
+    if (!res.locals?.user)
+        return res.status(401).json({ message: "Authentication required" });
+    if (!("directory" in req.query))
+        return res.status(400).json({ message: "Directory required" });
+
     try {
-        if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
-
-        // Require explicit directory query param per tests
-        if (!('directory' in req.query)) return res.status(400).json({ message: "Directory required" });
-        const { directory } = req.query;
-
-        // Reject backslashes explicitly
-        if (directory && directory.includes('\\')) return res.status(400).json({ message: "Invalid directory path" });
-
-        // If it's a single segment name with invalid chars, report that specifically
-        if (directory && !directory.includes('/') && !isSimpleName(directory)) return res.status(400).json({ message: "Invalid directory name" });
-
-        let dirPath;
-        try {
-            dirPath = getSafePath(baseFiles, directory || ".");
-        } catch (err) {
-            return res.status(400).json({ message: "Invalid directory path" });
+        const dirPath = getSafePath(BASE.files, req.query.directory || ".");
+        if (!existsSync(dirPath) || !statSync(dirPath).isDirectory()) {
+            return res.status(400).json({ message: "Invalid directory name" });
         }
 
-        // Non-existent dirs are considered invalid for this endpoint per tests
-        if (!existsSync(dirPath)) return res.status(400).json({ message: "Invalid directory path" });
+        const files = readdirSync(dirPath).map(name => {
+            const p = join(dirPath, name);
+            const s = statSync(p);
+            return {
+                name,
+                size: s.size,
+                isDirectory: s.isDirectory(),
+                modified: s.mtime,
+            };
+        });
 
-        if (existsSync(dirPath) && statSync(dirPath).isDirectory()) {
-            const files = readdirSync(dirPath);
-            const fileList = files.map(file => {
-                const filePath = join(dirPath, file);
-                // Secondary check: Ensure readdir didn't somehow escape (rare but good for defense-in-depth)
-                if (!resolve(filePath).startsWith(dirPath)) return null;
-
-                const stats = statSync(filePath);
-                return {
-                    name: file,
-                    size: stats.size,
-                    isDirectory: stats.isDirectory(),
-                    modified: stats.mtime
-                };
-            }).filter(Boolean);
-
-            return res.json({ success: true, files: fileList });
-        }
-        return res.status(404).json({ message: "Directory not found" });
-    } catch (error) {
-        return res.status(400).json({ message: "Invalid directory path" });
+        return res.json({ success: true, files });
+    } catch {
+        return res.status(400).json({ message: "Invalid directory name" });
     }
 });
 
+// ---- Config load ----
 router.get("/config/load", (req, res) => {
+    if (!res.locals?.user)
+        return res.status(401).json({ message: "Authentication required" });
+
+    const { configFile } = req.query;
+    if (!configFile)
+        return res.status(400).json({ message: "Config file required" });
+    if (!/^[a-zA-Z0-9._-]+\.json$/.test(configFile))
+        return res.status(400).json({ message: "Invalid config file name" });
+
     try {
-        if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
-
-        const { configFile } = req.query;
-        if (!configFile) return res.status(400).json({ message: "Config file required" });
-        if (!/^[a-zA-Z0-9._-]+\.json$/.test(configFile)) return res.status(400).json({ message: "Invalid config file name" });
-
-        let configPath;
-        try {
-            configPath = getSafePath(baseConfig, configFile);
-        } catch (err) {
-            return res.status(400).json({ message: "Invalid config path" });
-        }
-
+        const configPath = getSafePath(BASE.config, configFile);
         if (existsSync(configPath)) {
-            const config = readFileSync(configPath, "utf8");
-            return res.json({ success: true, config: JSON.parse(config) });
+            return res.json({
+                success: true,
+                config: JSON.parse(readFileSync(configPath, "utf8")),
+            });
         }
-        // Nonexistent config files considered invalid for this endpoint per tests
         return res.status(400).json({ message: "Invalid config file path" });
-    } catch (error) {
+    } catch {
         return res.status(400).json({ message: "Invalid config path" });
     }
 });
 
+// ---- Export CSV ----
 router.get("/export-csv", (req, res) => {
+    if (!res.locals?.user)
+        return res.status(401).json({ message: "Authentication required" });
+
+    const { dataFile } = req.query;
+    if (!dataFile)
+        return res.status(400).json({ message: "Data file required" });
+    if (!dataFile.endsWith(".csv"))
+        return res.status(400).json({ message: "Only CSV files allowed" });
+    if (!isSimpleName(dataFile))
+        return res.status(400).json({ message: "Invalid data file name" });
+
     try {
-        if (!res.locals?.user) return res.status(401).json({ message: "Authentication required" });
-
-        const { dataFile } = req.query;
-        if (!dataFile) return res.status(400).json({ message: "Data file required" });
-        if (!dataFile.endsWith('.csv')) return res.status(400).json({ message: "Only CSV files allowed" });
-        if (!isSimpleName(dataFile)) return res.status(400).json({ message: "Invalid data file name" });
-
-        let dataPath;
-        try {
-            dataPath = getSafePath(baseData, dataFile);
-        } catch (err) {
-            return res.status(400).json({ message: "Invalid data file path" });
-        }
-
+        const dataPath = getSafePath(BASE.data, dataFile);
         if (existsSync(dataPath) && statSync(dataPath).isFile()) {
-            const content = readFileSync(dataPath, 'utf8');
-            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-            return res.send(content);
+            res.setHeader("Content-Type", "text/csv; charset=utf-8");
+            return res.send(readFileSync(dataPath, "utf8"));
         }
-
         return res.status(400).json({ message: "Invalid data file path" });
-    } catch (err) {
+    } catch {
         return res.status(400).json({ message: "Invalid data file path" });
     }
 });
 
+// ---- Generate custom report ----
 // Helper for HTML escaping
 const escapeHtml = (value) => String(value)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
