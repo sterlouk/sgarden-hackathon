@@ -1,3 +1,12 @@
+test("generate-custom-report blocks non-whitelisted keys", async (t) => {
+	const res = await t.context.got.post("api/data/generate-custom-report", {
+		headers: { "x-user-id": "u1" },
+		json: { templateString: "Should be empty: ${notallowed}", data: { notallowed: "SECRET" } },
+	});
+	t.is(res.statusCode, 200);
+	t.true(res.body.success);
+	t.is(res.body.report, "Should be empty: ");
+});
 import http from "node:http";
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
