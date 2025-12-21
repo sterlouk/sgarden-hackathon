@@ -27,24 +27,25 @@ const BASE = {
 
 // ---- Single safe resolver ----
 const getSafePath = (baseDir, userInput = ".") => {
+    // Reject absolute paths
+    if (typeof userInput !== "string" || userInput.startsWith("/") || userInput.includes("\\") || userInput.includes("..") || userInput.includes("\0")) {
+        throw new Error("Invalid path input");
+    }
+    // Optionally, allow only simple names or paths
     if (userInput !== "." && !isSimpleName(userInput) && !isSimplePath(userInput)) {
         throw new Error("Invalid path input");
     }
-
-    const baseWithSep = baseDir.endsWith(sep) ? baseDir : baseDir + sep;
     const target = resolve(baseDir, userInput);
-
+    const baseWithSep = baseDir.endsWith(sep) ? baseDir : baseDir + sep;
     if (target !== baseDir && !target.startsWith(baseWithSep)) {
         throw new Error("Directory traversal detected");
     }
-
     if (existsSync(target)) {
         const real = realpathSync(target);
         if (real !== baseDir && !real.startsWith(baseWithSep)) {
             throw new Error("Symlink traversal detected");
         }
     }
-
     return target;
 };
 

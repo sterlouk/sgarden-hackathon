@@ -248,23 +248,23 @@ router.post("/compress-files", (req, res) => {
 			return res.status(400).json({ message: "Invalid file name" });
 		}
 
-		// Additional validation to prevent path traversal
-		if (outputName.includes("/") || outputName.includes("\\") || outputName.includes("..")) {
-			return res.status(400).json({ message: "Invalid file name" });
-		}
-
-		// Additional check for path traversal patterns in outputName
-		if (outputName.includes("..") || outputName.includes("/") || outputName.includes("\\") || outputName.includes(":")) {
+		// Stricter validation to prevent path traversal and unsafe names
+		if (
+			typeof outputName !== "string" ||
+			outputName.startsWith("/") ||
+			outputName.includes("\\") ||
+			outputName.includes("..") ||
+			outputName.includes(":") ||
+			outputName.includes("\0")
+		) {
 			return res.status(400).json({ message: "Invalid output file name" });
 		}
 
 		const baseDir = resolve("./files");
 		const targetZip = resolve(baseDir, `${outputName}.zip`);
-		// Check that targetZip is within baseDir
-		if (!targetZip.startsWith(baseDir + sep) && targetZip !== baseDir) {
-			return res.status(400).json({ message: "Invalid path" });
-		}
-		if (!targetZip.startsWith(baseDir + sep)) {
+		// Ensure targetZip is within baseDir
+		const baseWithSep = baseDir.endsWith(sep) ? baseDir : baseDir + sep;
+		if (targetZip !== baseDir && !targetZip.startsWith(baseWithSep)) {
 			return res.status(400).json({ message: "Invalid path" });
 		}
 
