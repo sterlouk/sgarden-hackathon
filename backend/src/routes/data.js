@@ -314,8 +314,8 @@ router.post("/generate-custom-report", (req, res) => {
         const { templateString, data } = req.body;
         if (!templateString) return res.status(400).json({ message: "Template string required" });
 
-        // Only allow username and totalUsers from user-supplied data
-        const allowedKeys = ["username", "totalUsers"];
+        // Allow username, totalUsers, and name from user-supplied data
+        const allowedKeys = ["username", "totalUsers", "name"];
         const safeData = {};
         if (data && typeof data === "object") {
             for (const key of allowedKeys) {
