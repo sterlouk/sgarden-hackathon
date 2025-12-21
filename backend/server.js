@@ -51,7 +51,22 @@ if (NODE_ENV === "development" || process.env.FORCE_DEV_MORGAN === "1") {
     void 0; 
 }
 }
-app.use(cors({ credentials: true, origin: true }));
+// Configure CORS with an explicit safe whitelist for methods and headers.
+// Set `CORS_ORIGINS` env var as a comma-separated list (e.g. "http://localhost:3002,http://example.com").
+const corsOrigins = (process.env.CORS_ORIGINS || "http://localhost:3002").split(",").map(s => s.trim());
+const corsOptions = {
+	origin: (origin, callback) => {
+		// allow non-browser requests (curl, server-to-server) where origin is undefined
+		if (!origin) return callback(null, true);
+		if (corsOrigins.indexOf(origin) !== -1) return callback(null, true);
+		return callback(new Error("CORS origin not allowed"));
+	},
+	credentials: true,
+	methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+	allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+	optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 app.use((req, _, next) => { req.body ||= {}; next(); });
