@@ -1,12 +1,15 @@
 import express from "express";
 import Sentry from "@sentry/node";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync, realpathSync } from "fs";
-import { join, resolve, sep, normalize } from "path";
+import { join, sep, normalize, resolve } from "path";
 import { isSimpleName, isSimplePath, validateUserInput } from "./data-validation.js";
+
+
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const router = express.Router({ mergeParams: true });
 
-const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
+// Centralized path resolver: only place where path.resolve is called
 const baseUploads = resolve(process.cwd(), "uploads");
 const baseReports = resolve(process.cwd(), "reports");
 const baseTemplates = resolve(process.cwd(), "templates");
@@ -14,12 +17,6 @@ const baseFiles = resolve(process.cwd(), "files");
 const baseData = resolve(process.cwd(), "data");
 const baseConfig = resolve(process.cwd(), "config");
 
-/**
- * Utility to safely resolve a path and prevent traversal.
- * @param {string} baseDir - The trusted root directory.
- * @param {string} userInput - The untrusted path/filename from the user.
- * @returns {string} - The fully resolved safe path.
- */
 /**
  * Safely resolves a path after user input has been validated and sanitized.
  * User input must be validated using data-validation.js before calling this function.
@@ -315,17 +312,23 @@ router.post("/generate-custom-report", (req, res) => {
         if (!templateString) return res.status(400).json({ message: "Template string required" });
 
         // Allow username, totalUsers, and name from user-supplied data
-        const allowedKeys = ["username", "totalUsers", "name"];
-        const safeData = {};
+        let username = "Unknown";
+        let totalUsers = 100;
+        let name = undefined;
         if (data && typeof data === "object") {
-            for (const key of allowedKeys) {
-                if (Object.prototype.hasOwnProperty.call(data, key)) {
-                    safeData[key] = data[key];
-                }
+            if (Object.prototype.hasOwnProperty.call(data, "username")) {
+                username = data.username;
+            }
+            if (Object.prototype.hasOwnProperty.call(data, "totalUsers")) {
+                totalUsers = data.totalUsers;
+            }
+            if (Object.prototype.hasOwnProperty.call(data, "name")) {
+                name = data.name;
             }
         }
-        const defaults = { username: "Unknown", totalUsers: 100 };
-        const report = renderTemplateSafely(templateString, Object.assign({}, defaults, safeData));
+        const reportData = { username, totalUsers };
+        if (name !== undefined) reportData.name = name;
+        const report = renderTemplateSafely(templateString, reportData);
         return res.json({ success: true, report, generatedAt: new Date() });
     } catch (error) {
         return res.status(500).json({ message: "Report generation failed" });
