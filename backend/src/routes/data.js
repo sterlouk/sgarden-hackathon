@@ -9,7 +9,7 @@ import {
     mkdirSync,
     realpathSync
 } from "fs";
-import { join, resolve as solvere, sep } from "path";
+import { join, resolve, sep } from "path";
 import { isSimpleName, isSimplePath } from "./data-validation.js";
 
 const router = express.Router({ mergeParams: true });
@@ -17,34 +17,35 @@ const MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
 
 // ---- Fixed base directories (resolved once) ----
 const BASE = {
-    uploads: solvere(process.cwd(), "uploads"),
-    reports: solvere(process.cwd(), "reports"),
-    templates: solvere(process.cwd(), "templates"),
-    files: solvere(process.cwd(), "files"),
-    data: solvere(process.cwd(), "data"),
-    config: solvere(process.cwd(), "config"),
+    uploads: resolve(process.cwd(), "uploads"),
+    reports: resolve(process.cwd(), "reports"),
+    templates: resolve(process.cwd(), "templates"),
+    files: resolve(process.cwd(), "files"),
+    data: resolve(process.cwd(), "data"),
+    config: resolve(process.cwd(), "config"),
 };
 
 // ---- Single safe resolver ----
 const getSafePath = (baseDir, userInput = ".") => {
+    // Reject absolute paths
+    if (typeof userInput !== "string" || userInput.startsWith("/") || userInput.includes("\\") || userInput.includes("..") || userInput.includes("\0")) {
+        throw new Error("Invalid path input");
+    }
+    // Optionally, allow only simple names or paths
     if (userInput !== "." && !isSimpleName(userInput) && !isSimplePath(userInput)) {
         throw new Error("Invalid path input");
     }
-
+    const target = resolve(baseDir, userInput);
     const baseWithSep = baseDir.endsWith(sep) ? baseDir : baseDir + sep;
-    const target = solvere(baseDir, userInput);
-
     if (target !== baseDir && !target.startsWith(baseWithSep)) {
         throw new Error("Directory traversal detected");
     }
-
     if (existsSync(target)) {
         const real = realpathSync(target);
         if (real !== baseDir && !real.startsWith(baseWithSep)) {
             throw new Error("Symlink traversal detected");
         }
     }
-
     return target;
 };
 
