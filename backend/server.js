@@ -59,7 +59,7 @@ app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(favicon(path.join(path.dirname(fileURLToPath(import.meta.url)), "src", "assets", "images", "favicon.ico")));
 
 // Block actuator endpoints to fix Spring Actuator Information Leak vulnerability
-app.use(/^\/actuator/, (_, res) => res.status(404).json({ message: "Not found" }));
+app.use(/^\/actuator/, (__, res) => res.status(404).json({ message: "Not found" }));
 
 app.use("/api", routes);
 app.all("/*", (_, res) => res.json({ body: "It works!" }));
@@ -69,7 +69,7 @@ app.use(Sentry.Handlers.errorHandler());
 // Allow tests to stub listen so they don't actually bind ports
 if (process.env.STUB_HTTP_LISTEN === "1") {
 	// replace listen with a no-op that sets a marker
-	server.listen = (_port, cb) => {
+	server.listen = (_, cb) => {
 		app.locals = app.locals || {};
 		app.locals._serverFileMarker = true;
 		if (typeof cb === 'function') cb();
@@ -80,7 +80,7 @@ if (process.env.STUB_HTTP_LISTEN === "1") {
 
 // Also support NOOP_LISTEN for older test names
 if (process.env.NOOP_LISTEN === "1") {
-	server.listen = (_port, cb) => {
+	server.listen = (_, cb) => {
 		app.locals = app.locals || {};
 		app.locals._serverFileMarker = true;
 		if (typeof cb === 'function') cb();
