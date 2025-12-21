@@ -38,6 +38,13 @@ build/Release
 
 # Dependency directories
 node_modules/
+
+# Ignore test data directories
+test-data/
+test-files/
+test-reports/
+test-uploads/
+test-templates/
 jspm_packages/
 
 # TypeScript v1 declaration files

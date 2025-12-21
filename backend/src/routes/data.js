@@ -314,8 +314,18 @@ router.post("/generate-custom-report", (req, res) => {
         const { templateString, data } = req.body;
         if (!templateString) return res.status(400).json({ message: "Template string required" });
 
+        // Allow username, totalUsers, and name from user-supplied data
+        const allowedKeys = ["username", "totalUsers", "name"];
+        const safeData = {};
+        if (data && typeof data === "object") {
+            for (const key of allowedKeys) {
+                if (Object.prototype.hasOwnProperty.call(data, key)) {
+                    safeData[key] = data[key];
+                }
+            }
+        }
         const defaults = { username: "Unknown", totalUsers: 100 };
-        const report = renderTemplateSafely(templateString, Object.assign({}, defaults, data || {}));
+        const report = renderTemplateSafely(templateString, Object.assign({}, defaults, safeData));
         return res.json({ success: true, report, generatedAt: new Date() });
     } catch (error) {
         return res.status(500).json({ message: "Report generation failed" });
