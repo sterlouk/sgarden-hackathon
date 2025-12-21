@@ -9,7 +9,7 @@ import {
     mkdirSync,
     realpathSync
 } from "fs";
-import { join, resolve, sep } from "path";
+import { join, resolve as solvere, sep } from "path";
 import { isSimpleName, isSimplePath } from "./data-validation.js";
 
 const router = express.Router({ mergeParams: true });
@@ -17,12 +17,12 @@ const MAX_UPLOAD_SIZE = 10 * 1024 * 1024;
 
 // ---- Fixed base directories (resolved once) ----
 const BASE = {
-    uploads: resolve(process.cwd(), "uploads"),
-    reports: resolve(process.cwd(), "reports"),
-    templates: resolve(process.cwd(), "templates"),
-    files: resolve(process.cwd(), "files"),
-    data: resolve(process.cwd(), "data"),
-    config: resolve(process.cwd(), "config"),
+    uploads: solvere(process.cwd(), "uploads"),
+    reports: solvere(process.cwd(), "reports"),
+    templates: solvere(process.cwd(), "templates"),
+    files: solvere(process.cwd(), "files"),
+    data: solvere(process.cwd(), "data"),
+    config: solvere(process.cwd(), "config"),
 };
 
 // ---- Single safe resolver ----
@@ -32,7 +32,7 @@ const getSafePath = (baseDir, userInput = ".") => {
     }
 
     const baseWithSep = baseDir.endsWith(sep) ? baseDir : baseDir + sep;
-    const target = resolve(baseDir, userInput);
+    const target = solvere(baseDir, userInput);
 
     if (target !== baseDir && !target.startsWith(baseWithSep)) {
         throw new Error("Directory traversal detected");
