@@ -238,7 +238,7 @@ test("browse-files rejects invalid directory name", async (t) => {
 		searchParams: { directory: "../etc" },
 	});
 	t.is(res.statusCode, 400);
-	t.is(res.body.message, "Invalid directory path");
+	t.is(res.body.message, "Invalid directory name");
 });
 
 test("browse-files returns file list", async (t) => {
@@ -429,7 +429,7 @@ test("upload-file rejects path traversal in destination", async (t) => {
 		json: { filename: "test.txt", content: "data", destination: "../etc" },
 	});
 	t.is(res.statusCode, 400);
-	t.is(res.body.message, "Invalid upload path");
+	t.is(res.body.message, "Invalid destination");
 });
 
 test("upload-file rejects path traversal in filename resolution", async (t) => {
@@ -438,7 +438,7 @@ test("upload-file rejects path traversal in filename resolution", async (t) => {
 		json: { filename: "test.txt", content: "data", destination: "user/../../etc" },
 	});
 	t.is(res.statusCode, 400);
-	t.is(res.body.message, "Invalid upload path");
+	t.is(res.body.message, "Invalid destination");
 });
 
 test("export-csv returns 400 for symlink-unsafe nonexistent file", async (t) => {
@@ -467,7 +467,7 @@ test("browse-files returns 400 for symlink-unsafe nonexistent directory", async 
 	});
 	// Nonexistent dirs fail symlink check before existence check
 	t.is(res.statusCode, 400);
-	t.regex(res.body.message, /Invalid directory path/i);
+	t.is(res.body.message, "Invalid directory name");
 });
 
 test("browse-files rejects invalid directory characters", async (t) => {
@@ -485,7 +485,7 @@ test("browse-files rejects backslash in directory", async (t) => {
 		searchParams: { directory: "docs\\..\\etc" },
 	});
 	t.is(res.statusCode, 400);
-	t.is(res.body.message, "Invalid directory path");
+	t.is(res.body.message, "Invalid directory name");
 });
 
 test("config/load returns 400 for symlink-unsafe nonexistent config", async (t) => {
@@ -514,7 +514,7 @@ test("browse-files rejects path with .. in middle", async (t) => {
 		searchParams: { directory: "docs/../etc" },
 	});
 	t.is(res.statusCode, 400);
-	t.is(res.body.message, "Invalid directory path");
+	t.is(res.body.message, "Invalid directory name");
 });
 
 test("browse-files successfully lists directory with existing files", async (t) => {
