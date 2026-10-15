@@ -84,3 +84,11 @@ test-files/
 test-reports/
 test-templates/
 test-uploads/
+
+# Runtime file storage used by src/routes/data.js (created on demand; tests create and remove these)
+/config/
+/data/
+/reports/
+/templates/
+/uploads/
+/files/
